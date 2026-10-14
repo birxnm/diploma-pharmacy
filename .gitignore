@@ -1,0 +1,106 @@
+# PHA2-4 - Last updated: 2026-10-14
+# Ignore rules for the PharmaStock repository (backend, forecasting, frontend, prototype, docs).
+# Rule of thumb: generated files, local environments, secrets and datasets are never committed.
+
+# --- Python ------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+ENV/
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+pip-wheel-metadata/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.ipynb_checkpoints/
+
+# --- Node / frontend ---------------------------------------------------------
+node_modules/
+.vite/
+.eslintcache
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.local
+
+# --- Operating systems -------------------------------------------------------
+.DS_Store
+.AppleDouble
+._*
+Thumbs.db
+Desktop.ini
+
+# --- Editors and IDEs --------------------------------------------------------
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# --- Environment files and secrets ------------------------------------------
+# Only .env.example (placeholders, no real values) is tracked.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- Databases and local services -------------------------------------------
+*.sqlite
+*.sqlite3
+*.db
+pgdata/
+postgres-data/
+docker-compose.override.yml
+
+# --- Data files --------------------------------------------------------------
+# Raw and processed datasets are never committed (size, licensing, partner data).
+# Only the small, documented samples under forecasting/data/sample/ are tracked.
+# If small test fixtures are needed elsewhere, re-include them explicitly here.
+forecasting/data/raw/
+forecasting/data/interim/
+forecasting/data/processed/
+forecasting/data/external/
+# Output directories of forecasting/data/generate_synthetic.py (regenerate, do not commit).
+synthetic/
+synthetic-large/
+*.csv
+*.tsv
+*.xlsx
+*.xls
+*.parquet
+*.feather
+*.pkl
+*.pickle
+*.joblib
+*.h5
+*.hdf5
+*.npy
+*.npz
+!forecasting/data/sample/*.csv
+!forecasting/data/sample/*.xlsx
+
+# --- Logs and temporary files ----------------------------------------------
+*.log
+logs/
+tmp/
+*.tmp
+*.bak
