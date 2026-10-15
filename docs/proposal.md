@@ -1,6 +1,6 @@
 # PharmaStock — Project Proposal
 
-Task: PHA2-5 | Last updated: 2026-10-14 | Status: draft (sections 8 and 9 to be completed) | Maintainer: Birkhanym Kazhymukhamet
+Task: PHA2-5 | Last updated: 2026-10-15 | Status: complete for pre-defense-1 (open for revision during requirements analysis) | Maintainer: Birkhanym Kazhymukhamet
 
 ## 1. Project title
 
@@ -88,22 +88,83 @@ Develop a prototype of a smart supply chain analytics system that forecasts phar
 4. Technical documentation: requirements, architecture, database schema, API contract, data specification, setup and testing instructions.
 5. The thesis text and a scientific article based on the project results.
 
-## 8. Project scope (draft)
+## 8. Project scope
 
-> Status: draft. The scope table, assumptions and constraints will be completed in the next revision of this document.
+### 8.1 In scope and out of scope
 
-Preliminary boundaries, to be confirmed with the supervisor:
+| Area | In scope | Out of scope (future work) |
+|---|---|---|
+| Data input | Import of consumption, stock and receipt data from CSV/XLSX exports of the organization's accounting system; validation and a data-quality summary per import | Real-time integration with national systems and with 1C; automatic extraction from accounting databases |
+| Master data | Medicine catalogue (code, name, unit, group, active flag); suppliers and lead times per item | Procurement contracts, prices, budgets |
+| Forecasting | Weekly consumption forecast per item for a configurable horizon (initial decision: weekly step, 12-week horizon); baselines and ML models; comparison on hold-out data with MAE and WAPE | Daily forecasts; forecasting of demand for new items without history |
+| Shortage risk | Risk calculation from forecast, current stock, planned receipts and lead time; prioritised risk list with risk level and expected stock-out date; in-app notifications for high-risk items | Automatic order generation and ordering/procurement execution; e-prescriptions |
+| Planning inputs | Recording of planned deliveries (expected receipts); configuration of risk thresholds and safety-stock parameters | Supplier portals, electronic exchange of orders |
+| User interface | Web interface: dashboards, item pages with history and forecast, risk list, notifications, configuration, import pages; English first (NFR-10); Russian localisation is a Could-priority requirement, implemented only if time allows | Mobile application |
+| Users and security | Authentication, roles (administrator, pharmacist, viewer), audit log of imports, forecast runs and configuration changes | Multi-organization SaaS; integration with external identity providers |
+| Reporting | Export of forecast and risk reports to CSV/XLSX | Printed forms required by regulators |
+| Data | Aggregated consumption, stock and receipt data per item and week; a documented synthetic dataset for development | Patient data of any kind (not stored, not processed) |
 
-- **In scope (preliminary):** import of consumption, stock and receipt data from CSV/XLSX exports; medicine catalogue; weekly consumption forecast per item; shortage-risk calculation and a prioritised risk list; dashboards and item pages; users and roles; comparison of models on hold-out data.
-- **Out of scope (preliminary):** execution of orders and procurement, e-prescriptions, real-time integration with national systems and 1C, mobile application, patient data, multi-organization SaaS.
+The functional and non-functional requirements that implement this scope, with priorities and acceptance criteria, are listed in [requirements.md](requirements.md).
 
-## 9. Engineering complexity (draft)
+### 8.2 Assumptions and constraints
 
-> Status: draft. To be completed in the next revision of this document.
+| ID | Type | Statement | Consequence for the project |
+|---|---|---|---|
+| A-01 | Assumption | Consumption, stock and receipt history per item can be exported from the organization's accounting system as CSV/XLSX | Import by files is sufficient for the prototype; no live integration is built |
+| A-02 | Assumption | Historical data covers at least two to three years so that yearly seasonality can be assessed | Shorter history reduces the usefulness of seasonal baselines; the evaluation plan allows for this |
+| A-03 | Assumption | Lead time per item (or per supplier) can be estimated from past receipts or provided by procurement staff | Lead time is a configurable input, not a predicted value |
+| C-01 | Constraint | Access to real data from a partner healthcare organization is being requested and is not guaranteed | A documented synthetic dataset is used for development and the first experiments until real data are available; results on synthetic data are reported as such |
+| C-02 | Constraint | No patient personal data is stored or processed (NFR-04) | The import formats contain only aggregated per-item, per-week quantities (see data/data-specification.md) |
+| C-03 | Constraint | Initial time step is weekly and the initial forecast horizon is 12 weeks | Both are configuration parameters and may be revised during requirements analysis; the data model stores periods by their start date so that the step can change |
+| C-04 | Constraint | Team of three students, September 2026 – June 2027, with pre-defense deadlines set by the School | Scope is limited to a prototype for a single organization; features marked "Could" in the requirements are implemented only if time allows |
+| C-05 | Constraint | The prototype must be deployable on a modest server (4 vCPU / 8 GB) with Docker Compose on Linux (NFR-01, NFR-07) | Models and the forecast run are designed for batch execution within the stated time limits |
 
-Preliminary list of the sources of complexity: integration of data import, forecasting, risk logic and the user interface into one system; forecasting of intermittent demand; handling of censored demand during stock-outs; reproducible experiments and evaluation on a hold-out period.
+### 8.3 Scope realism
 
-## 10. Related documents
+The scope is limited to what three students can design, implement and evaluate within the academic year: one organization, file-based import, batch forecasting and a web interface. Items listed as out of scope are either operational functions that require integration with external systems (ordering, national systems, 1C) or product features that do not contribute to answering the research question (mobile application, multi-organization SaaS). The milestone plan in [project-management/plan-and-milestones.md](project-management/plan-and-milestones.md) allocates the work per month, and the risk register in [project-management/risks.md](project-management/risks.md) records the fallback for each major risk.
+
+## 9. Engineering complexity
+
+| Challenge | Why it is hard | How the project addresses it |
+|---|---|---|
+| Integration of four components | Data import and validation, the forecasting module, the shortage-risk logic and the web interface must share one data model and one API, and be developed in parallel by three people | A common data model (medicine_item, consumption_record, stock_snapshot, receipt, planned_receipt, forecast_run, forecast, risk_assessment, ...) and an API contract are fixed early; the forecasting module is an in-process Python package with a single interface, `forecast_items(history, horizon, config)`, called by the backend; CI runs tests on every pull request |
+| Intermittent demand | Most item-level series contain long runs of zeros and occasional spikes; classical smoothing and generic regression underestimate the spikes or produce constant forecasts; standard percentage errors are undefined on zero actuals | Baselines designed for intermittent demand (Croston, SBA) are included alongside naive, seasonal-naive and moving-average; ML models (LightGBM with lag and calendar features) are compared against them; evaluation uses MAE and WAPE, with WAPE computed only where total actual consumption in the window is greater than zero |
+| Censored demand | Zero consumption during a stock-out is not zero demand; learning from such periods biases every model downwards and hides exactly the shortages the system should prevent | Stock-out periods are flagged from stock snapshots (FR-17); flagged periods are excluded from training or treated as missing, and forecast quality is reported separately for items affected by stock-outs |
+| Turning forecasts into decisions | A forecast alone does not tell the pharmacist what to do; the risk signal depends on the forecast, the current stock, planned receipts, lead time and safety stock, and must be explainable | Projected stock per week is computed as current stock plus receipts due minus cumulative forecast; the expected stock-out date is the first week where projected stock falls to or below safety stock; the risk level (High / Medium / Low) is derived from the stock-out date relative to the lead time and the horizon, and the projected-stock curve is shown to the user |
+| Data quality | Exports from accounting systems contain missing columns, negative quantities, duplicate periods and unknown items; silent acceptance would produce wrong forecasts | Validation rules with clear error reporting (FR-02, NFR-06) and a data-quality summary per import (FR-18) |
+| Reproducible evaluation | Model comparison must be fair and repeatable: the same time-based split, the same seeds and saved configurations for every run | Rolling-origin evaluation with a train/validation/test split by date, fixed seeds, versioned experiment configurations and saved results (NFR-05) |
+| Performance and access control | A forecast run for 1,000 items with 3 years of weekly history must complete within 5 minutes (NFR-01); role-based access, hashed passwords and an audit log are required (NFR-03, FR-14, FR-15) | Batch forecast runs executed as background jobs with status tracking; roles enforced in the API layer; audit records written for imports, forecast runs and configuration changes |
+
+## 10. Success criteria
+
+| ID | Criterion | Measure | Measurement conditions |
+|---|---|---|---|
+| S-01 | Forecast accuracy exceeds the baselines | MAE and WAPE on the hold-out test period, per item and aggregated per medicine group | The selected model is compared with naive, seasonal-naive (season 52), moving-average and Croston/SBA baselines on the same time-based split; WAPE is reported only when total actual consumption in the window is greater than zero; the comparison table is produced by a reproducible experiment |
+| S-02 | Shortage alerts are useful | Precision and recall of High/Medium alerts against actual stock-outs on the test period | Alerts are generated from forecasts made before the test period using the recorded stock and receipts; recall for High-risk items is prioritised, because a missed shortage costs more than a false alert |
+| S-03 | The prototype works end to end | A complete scenario runs without manual intervention: import of files, forecast run, risk list, item page, notification, report export | Demonstrated on the synthetic dataset and, if available, on real data in the integration demo (January 2027) and at the final pre-defense |
+| S-04 | Performance and deployment targets are met | Forecast run time (NFR-01), page response time (NFR-02), deployment with Docker Compose (NFR-07) | Measured on a 4 vCPU / 8 GB server with 1,000 items and 3 years of weekly history |
+| S-05 | Experiments are reproducible | Re-running a saved experiment configuration reproduces the reported metrics | Fixed seeds, versioned configurations and saved results (NFR-05) |
+| S-06 | Target users can complete their scenarios | User testing of the key scenarios with representatives of pharmacy and procurement staff; findings documented | Planned for the spring semester, after the main screens are available |
+
+Numeric targets for S-01 and S-02 are not fixed in advance: they will be set after the first baseline run on the synthetic dataset and revised when real data become available, so that the evaluation is not tuned to a desired result. The initial working expectation is that the selected model has a lower WAPE than the best baseline for the majority of medicine groups and is not worse than the best baseline in aggregate. The full testing plan, metrics and measurement conditions are described in [verification-and-evaluation-plan.md](verification-and-evaluation-plan.md).
+
+## 11. Deliverables per pre-defense
+
+| Stage | Date | Deliverables | Git tag |
+|---|---|---|---|
+| Pre-defense 1 | 24 October 2026 | Repository with README; this proposal; evidence of relevance (stakeholders, interview guide, interview log); literature review; existing systems comparison; technology comparison; initial requirements with acceptance criteria; architecture description and diagrams (system context, use case, component draft) with editable sources; database schema and API contract (draft); UX mockups of key screens; verification and evaluation plan; project management materials (plan and milestones, risks, responsibilities, task register); supervisor feedback log; data specification and experiment plan | `pre-defense-1` |
+| Pre-defense 2 | To be confirmed by the School (planned after the January 2027 integration demo) | Prepared data and synthetic dataset; baseline and first ML models with a comparison on hold-out data; backend with database, REST API and risk calculation; main screens of the web interface; end-to-end integration demo; literature review draft for the thesis; updated requirements and architecture | `pre-defense-2` |
+| Final pre-defense | To be confirmed by the School (May–June 2027) | Final experiments, model comparison and error analysis per medicine group; notifications and threshold configuration; component and integration tests; deployed prototype; technical documentation; thesis draft; article manuscript; presentation | `final-pre-defense` |
+
+For each submission the team provides the repository link, the tag, a summary of completed work, known limitations and outstanding tasks. Tags are never moved or replaced.
+
+## 12. How the proposal was validated
+
+- The team composition, allocation of roles, work plan and evaluation methodology were approved by the supervisor in a justification letter dated 9 October 2026. The proposal text was prepared on that basis and is reviewed with the supervisor at the weekly meetings; comments and the team's decisions are recorded in [supervision/feedback-log.md](supervision/feedback-log.md).
+- Interviews with potential users (pharmacy and procurement staff of healthcare organizations) are planned and have not yet been conducted. The stakeholder list, the interview guide and the log of conducted interviews are kept in [evidence-of-relevance/](evidence-of-relevance/). The problem statement and the scope will be revised if the interviews contradict the current assumptions, and the requirements document will mark each statement as verified by interviews or as an assumption.
+- Access to real data is being requested from a partner healthcare organization; until it is confirmed, the data-related assumptions above remain assumptions and are tracked as a project risk.
+
+## 13. Related documents
 
 | Document | Path |
 |---|---|
@@ -114,6 +175,9 @@ Preliminary list of the sources of complexity: integration of data import, forec
 | Technology comparison | [technology-comparison.md](technology-comparison.md) |
 | Requirements | [requirements.md](requirements.md) |
 | Architecture | [architecture/architecture.md](architecture/architecture.md) |
+| Data specification | [data/data-specification.md](data/data-specification.md) |
 | Verification and evaluation plan | [verification-and-evaluation-plan.md](verification-and-evaluation-plan.md) |
 | Plan and milestones | [project-management/plan-and-milestones.md](project-management/plan-and-milestones.md) |
 | Risks | [project-management/risks.md](project-management/risks.md) |
+| Responsibilities | [project-management/responsibilities.md](project-management/responsibilities.md) |
+| Supervisor feedback log | [supervision/feedback-log.md](supervision/feedback-log.md) |
