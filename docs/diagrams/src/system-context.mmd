@@ -1,0 +1,30 @@
+%% PHA2-12 | System context diagram for PharmaStock | Last updated: 2026-10-15
+%% Source of docs/diagrams/export/system-context.svg (export is produced from this file).
+%% External data enters the system as manually uploaded files or manual entry;
+%% there is no automated integration with hospital systems or SK-Pharmacy in the prototype,
+%% and e-mail is not part of the system (notifications are in-app only).
+C4Context
+    title System context diagram for PharmaStock (draft)
+
+    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
+
+    Enterprise_Boundary(org, "Healthcare organization (hospital or polyclinic)") {
+        Person(pharmacist, "Head of hospital pharmacy / Pharmacist", "Primary user. Imports data, runs forecasts, reviews shortage risks, configures thresholds.")
+        Person(procurement, "Procurement and supply specialist", "Records planned deliveries and lead times, uses the risk list to plan purchases.")
+        Person(depthead, "Head of clinical department", "Views forecasts and risk status for the department's medicines (read only).")
+        Person(admin, "System administrator", "Manages users, roles and the deployment.")
+
+        System(pharmastock, "PharmaStock", "Smart supply chain analytics system: imports consumption, stock and receipt data, forecasts weekly consumption per item and calculates shortage risk.")
+
+        System_Ext(mis, "Hospital accounting system / MIS", "Existing source of consumption, stock and receipt records. Provides CSV/XLSX export files only.")
+    }
+
+    System_Ext(skpharmacy, "SK-Pharmacy delivery schedules", "Planned deliveries under centralised procurement. Available as documents, entered manually.")
+
+    Rel(pharmacist, pharmastock, "Uploads export files, runs forecasts, reviews risks, sets thresholds", "HTTPS, web browser")
+    Rel(procurement, pharmastock, "Records planned deliveries, reviews prioritised risk list", "HTTPS, web browser")
+    Rel(depthead, pharmastock, "Views forecasts and shortage risks", "HTTPS, web browser, read only")
+    Rel(admin, pharmastock, "Manages users, roles and settings", "HTTPS, web browser")
+
+    Rel(mis, pharmastock, "Consumption, stock and receipt data", "CSV/XLSX export files, uploaded manually")
+    Rel(skpharmacy, pharmastock, "Planned deliveries and expected dates", "Manual entry or planned_receipts.csv")
