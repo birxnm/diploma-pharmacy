@@ -1,6 +1,6 @@
 # PharmaStock — Technology comparison
 
-Task: PHA2-8 · Last updated: 2026-10-16 · Status: draft v0.3 (decisions 1–4 and summary drafted; decisions 5–6 to be added) · Authors: Abzal Bakhytov (editor; decisions 1–3), Evelina Penkova (decision 4), Birkhanym Kazhymukhamet (decisions 5–6)
+Task: PHA2-8 · Last updated: 2026-10-16 · Status: v1.0 (all six decisions accepted; for review before pre-defense-1) · Authors: Abzal Bakhytov (editor; decisions 1–3), Evelina Penkova (decision 4), Birkhanym Kazhymukhamet (decisions 5–6)
 
 ---
 
@@ -83,7 +83,39 @@ Pharmacy consumption is intermittent: most weeks are zero for many items, and ze
 > **Consequences.** `forecasting/pyproject.toml` gains pinned `statsforecast` and `lightgbm`; experiments pin seeds and configuration files (NFR-05). Rate forecasts are converted to weekly quantities and intervals in the forecasting API so that the risk calculation (FR-08) consumes one format; stock-out censoring is handled in preprocessing; model selection follows MAE and WAPE per `verification-and-evaluation-plan.md`.
 > **Status.** Accepted.
 
-## 6. Summary of decisions
+## 6. Decision 5 — Frontend framework
+
+The interface consists of a dashboard, item pages with charts, a prioritised risk list, import and settings pages (FR-05, FR-07, FR-09, FR-11, FR-18) for current desktop browsers (NFR-09). Candidates: Vue 3 with Vite, React, Angular.
+
+| Option | Facts and sources | Pros | Cons | Fit |
+|---|---|---|---|---|
+| Vue 3 + Vite | Vue 3.5.44 (2026-10-13); MIT; Single-File Components and Composition API recommended. Vite 8.3.4 (2026-10-08); MIT; Node ^20.19.0 or ≥ 22.12.0. [npm vue](https://registry.npmjs.org/vue/latest), [release](https://api.github.com/repos/vuejs/core/releases/latest), [introduction](https://vuejs.org/guide/introduction.html), [npm vite](https://registry.npmjs.org/vite/latest) | Team experience; SFCs keep each widget self-contained; fast dev server; Vue 3 wrappers for Chart.js (vue-chartjs) and ECharts (vue-echarts); stable 3.5 line | Smaller ecosystem and job market than React; some component libraries lag React equivalents | High |
+| React | 19.3.1 (2026-10-14; 19.3: 2026-09-09); MIT. [npm](https://registry.npmjs.org/react/latest), [versions](https://react.dev/versions), [release](https://github.com/react/react/releases/tag/v19.3.1) (the repository moved from `facebook/react` to the `react` organization; the old path redirects) | Largest ecosystem and community; actively released | No team experience; build tool and state approach must be chosen; JSX and hooks to learn | Medium |
+| Angular | 22.2.3 (2026-10-14); v22: 2026-06-03, LTS to 2028-06; MIT; peer dependencies rxjs and zone.js. [npm](https://registry.npmjs.org/@angular/core/latest), [releases](https://angular.dev/reference/releases), [release](https://github.com/angular/angular/releases/tag/v22.2.3) | Opinionated full framework (router, forms, DI, TypeScript); yearly majors with LTS | Steepest learning curve and most boilerplate; RxJS/zone.js overhead; no team experience | Low |
+
+> **Decision.** Vue 3 with the Composition API and Single-File Components in TypeScript, built with Vite, with Vue Router for pages and Pinia for shared state.
+> **Rationale.** C2: the frontend member already works in Vue, so the time goes into the forecast and risk views (FR-05, FR-07, FR-09); React would win only for a team that knows it, Angular for a large enterprise front end. C4: a single-page application keeps pages within NFR-02. C5: MIT, actively patched 3.5 line. C7: `npm run build` produces static files for the Compose stack.
+> **Consequences.** The frontend pins its Vite major in `frontend/package.json` with a matching Node version; TypeScript API types follow the OpenAPI schema; a frontend test job is added to CI once the first views exist (NFR-08 itself covers backend and forecasting).
+> **Status.** Accepted.
+
+## 7. Decision 6 — Charting library
+
+The views need a history line per item (FR-05), actual-versus-forecast lines with an interval band (FR-07) and small charts in the risk list (FR-09). Candidates: Chart.js via vue-chartjs, Apache ECharts via vue-echarts, D3.
+
+| Option | Facts and sources | Pros | Cons | Fit |
+|---|---|---|---|---|
+| Chart.js (vue-chartjs) | chart.js 4.5.1 (2025-10-13); MIT; repository pushed 2026-10-04 but no release in a year despite documented minor releases roughly every two months. Canvas only; annotation and zoom plugins; time scale needs a date adapter. vue-chartjs 5.3.4; MIT; peers vue ^3.0.0-0 or ^2.7.0, chart.js ^4.1.1. [npm](https://registry.npmjs.org/chart.js/latest), [release](https://api.github.com/repos/chartjs/Chart.js/releases/latest), [docs](https://www.chartjs.org/docs/latest/), [time axis](https://www.chartjs.org/docs/latest/axes/cartesian/time.html), [npm vue-chartjs](https://registry.npmjs.org/vue-chartjs/latest) | Simplest API; small bundle; Vue wrapper; sufficient for line and bar charts with filled bands | Time axis needs a date adapter; zoom and annotations (e.g. safety-stock line) need plugins; slower release cadence than documented | Medium (sufficient for first-iteration views) |
+| Apache ECharts (vue-echarts) | echarts 6.1.0 (2026-05-19); Apache-2.0. Canvas and SVG renderers; dataZoom and brush interaction; incremental rendering for millions of points; WAI-ARIA descriptions. vue-echarts 8.3.2; MIT; peers vue ^3.3.0, echarts ^6.0.0. [npm](https://registry.npmjs.org/echarts/latest), [release](https://api.github.com/repos/apache/echarts/releases/latest), [features](https://echarts.apache.org/en/feature.html), [npm vue-echarts](https://registry.npmjs.org/vue-echarts/latest) | Declarative options for forecast-versus-actual lines with interval bands, threshold lines and zoomable histories; large-data performance; current Vue 3 wrapper | Larger bundle unless tree-shaken; verbose option API; terse documentation | High |
+| D3 | 7.9.0 (2024-03-12); ISC; repository pushed 2026-05-28. Low-level toolbox with no concept of charts; its own documentation calls it overkill for a private dashboard. [npm](https://registry.npmjs.org/d3/latest), [release](https://api.github.com/repos/d3/d3/releases/latest), [What is D3](https://d3js.org/what-is-d3) | Unlimited customisation; foundation of many libraries | Every axis, tooltip and legend hand-built; discouraged for dashboards by its authors; last release March 2024 | Low |
+
+On the criteria alone ECharts ranks first: it offers data zoom, SVG rendering and large-dataset rendering out of the box, whereas Chart.js needs adapter and plugin packages for the same views. The team nevertheless chose Chart.js for the first iteration: the pre-defense-1 views are plain line and bar charts over at most 156 weekly history points plus the 12-week horizon per item, and its API is the quickest to learn.
+
+> **Decision.** Chart.js 4.x through vue-chartjs for all charts in the first iteration; Apache ECharts through vue-echarts is the documented fallback, adopted if Chart.js limits the forecast views.
+> **Rationale.** C1: FR-05 and FR-09 need line and bar charts; FR-07 needs two lines and a filled band, which Chart.js draws as a fill between datasets. C4: about 170 points per item are far below any rendering limit. C6: simplest API and least configuration. C5: MIT.
+> **Consequences.** Weekly `period_start` labels go on a category axis to avoid the date adapter. Annotation and zoom plugins are evaluated when the safety-stock line and multi-year zoom are implemented; if they prove insufficient, or the release cadence becomes a maintenance risk, the chart components are reimplemented with vue-echarts. Charts live in their own Single-File Components so that the switch does not touch pages or stores.
+> **Status.** Accepted, with ECharts as fallback; revisited at pre-defense-2.
+
+## 8. Summary of decisions
 
 | # | Decision | Chosen option | Alternatives considered | Status |
 |---|---|---|---|---|
@@ -91,5 +123,9 @@ Pharmacy consumption is intermittent: most weeks are zero for many items, and ze
 | 2 | Data storage | PostgreSQL (`postgres:16` pinned; 17/18 acceptable) | MySQL; MongoDB; TimescaleDB as optional extension | Accepted |
 | 3 | Component interaction | REST/JSON (OpenAPI); in-process forecasting package; background runs | gRPC to a separate service; Celery with RabbitMQ/Redis (deferred) | Accepted |
 | 4 | Forecasting toolkit | statsforecast + statsmodels; LightGBM as ML candidate | Prophet; sktime; darts | Accepted |
-| 5 | Frontend framework | To be added (Birkhanym Kazhymukhamet) | Vue 3; React; Angular | To be added |
-| 6 | Charting library | To be added (Birkhanym Kazhymukhamet) | Chart.js; Apache ECharts; D3 | To be added |
+| 5 | Frontend framework | Vue 3, Vite, TypeScript, Vue Router, Pinia | React; Angular | Accepted |
+| 6 | Charting library | Chart.js via vue-chartjs | Apache ECharts via vue-echarts (fallback); D3 | Accepted, ECharts fallback |
+
+## 9. Review and revision policy
+
+All six decisions are revisited at pre-defense-2 (January 2027; date set by the School), after the integration demo has shown the stack under realistic load. Two results can trigger an earlier review: the timed forecast run (NFR-01), which decides whether the in-process run stands or Celery is introduced, and the forecast view (FR-07), which decides whether Chart.js stands or ECharts replaces it. A changed decision is recorded as a new ADR in `architecture/architecture.md` and the summary table is updated with status Superseded; pinned versions are re-checked at every milestone.
