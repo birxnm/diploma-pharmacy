@@ -1,6 +1,6 @@
 # PharmaStock — Technology comparison
 
-Task: PHA2-8 · Last updated: 2026-10-15 · Status: draft v0.2 (decisions 1–3 and summary drafted; decisions 4–6 to be added) · Authors: Abzal Bakhytov (editor; decisions 1–3), Evelina Penkova (decision 4), Birkhanym Kazhymukhamet (decisions 5–6)
+Task: PHA2-8 · Last updated: 2026-10-16 · Status: draft v0.3 (decisions 1–4 and summary drafted; decisions 5–6 to be added) · Authors: Abzal Bakhytov (editor; decisions 1–3), Evelina Penkova (decision 4), Birkhanym Kazhymukhamet (decisions 5–6)
 
 ---
 
@@ -68,13 +68,28 @@ Two questions: which protocol connects the components (REST/JSON, gRPC or a mess
 > **Consequences.** ADR-5 is confirmed by a timed run on the synthetic dataset (NFR-01); if the limit is missed inside the API process, Celery with RabbitMQ (MPL-2.0, avoiding the RSALv2/SSPLv1/AGPLv3 terms of Redis 8) is the next step. The package stays importable without the backend so that experiments (NFR-05) run standalone.
 > **Status.** Accepted; the background-run mechanism (ADR-5) stays provisional until the NFR-01 timing.
 
-## 5. Summary of decisions
+## 5. Decision 4 — Forecasting toolkit
+
+Pharmacy consumption is intermittent: most weeks are zero for many items, and zeros during stock-outs are censored demand (FR-17). The toolkit must fit about 1,000 weekly series within NFR-01, return point forecasts and intervals (FR-07), be compared against baselines by MAE and WAPE (FR-16) and be reproducible (NFR-05). Candidates, all supporting Python 3.12: statsforecast with statsmodels; Prophet; LightGBM with scikit-learn.
+
+| Option | Facts and sources | Pros | Cons | Fit |
+|---|---|---|---|---|
+| statsforecast + statsmodels | statsforecast 2.1.1 (2026-07-16); Apache-2.0. Intermittent models ADIDA, CrostonClassic, CrostonOptimized, CrostonSBA, IMAPA, TSB; AutoARIMA, AutoETS, MSTL; baselines Naive, SeasonalNaive, WindowAverage; README claims 500× faster than Prophet. statsmodels 0.15.0 (2026-08-27); BSD-3-Clause; ARIMA, ETS, STL decomposition, SARIMAX. [PyPI](https://pypi.org/pypi/statsforecast/json), [release](https://api.github.com/repos/Nixtla/statsforecast/releases/latest), [repo](https://github.com/Nixtla/statsforecast), [statsmodels PyPI](https://pypi.org/pypi/statsmodels/json), [statsmodels release](https://api.github.com/repos/statsmodels/statsmodels/releases/latest), [tsa docs](https://www.statsmodels.org/stable/tsa.html) | Only option with purpose-built intermittent models, Auto models and baselines in one API; fast for thousands of series; diagnostics for the thesis | Intermittent forecasts are demand rates, so quantities need explicit handling; no exogenous features in Croston-type models; 2.x API differs from 1.x tutorials | High |
+| Prophet | 1.5.0 (2026-10-05); MIT. Additive trend/seasonality/holiday model fitted with Stan; works best with strong seasonality and several seasons of history. [PyPI](https://pypi.org/pypi/prophet/json), [repo](https://api.github.com/repos/facebook/prophet), [docs](https://facebook.github.io/prophet/) | Simple API; holidays and changepoints; still released | Built for smooth seasonal series, not sparse counts; no intermittent models; one slow Stan fit per item; cannot separate stock-out zeros from zero demand | Low |
+| LightGBM + scikit-learn (sktime, darts optional) | LightGBM 4.7.0 (2026-07-18); MIT; gradient boosting built for fast training and low memory use. scikit-learn 1.9.1 (2026-09-11); BSD-3-Clause. sktime 1.2.0 (BSD-3-Clause): unified interface to 500+ models; darts 0.48.1 (Apache-2.0): wraps Croston and LightGBM models. [LightGBM PyPI](https://pypi.org/pypi/lightgbm/json), [LightGBM release](https://github.com/lightgbm-org/LightGBM/releases/tag/v4.7.0) (the repository moved from `microsoft/LightGBM` to `lightgbm-org`; the old path redirects), [LightGBM docs](https://lightgbm.readthedocs.io/en/latest/), [scikit-learn release](https://api.github.com/repos/scikit-learn/scikit-learn/releases/latest), [sktime](https://www.sktime.net/en/stable/), [darts](https://github.com/unit8co/darts) | One global model across items with lag, calendar, stock-out and delivery features; Tweedie/Poisson objectives suit sparse counts; scikit-learn supplies time-based cross-validation and metrics | Feature engineering and careful time-based validation; harder to explain; darts pulls PyTorch Lightning, sktime adds abstraction | High as challenger |
+
+> **Decision.** statsforecast for the intermittent-demand candidates (Croston variants, TSB, ADIDA, IMAPA) and AutoETS/AutoARIMA; the reference baselines (naive, seasonal naive, moving average, Croston, SBA) are implemented in the package itself with NumPy so that FR-16 comparisons do not depend on a third-party release; statsmodels for decomposition and diagnostics; a LightGBM global model with scikit-learn cross-validation and metrics as the ML candidate. Prophet, sktime and darts are not adopted.
+> **Rationale.** C1: FR-06, FR-07, FR-16 and FR-17 need models built for sparse demand plus a global model using stock-out and delivery features; Prophet would suit smooth seasonal retail series, not here. C3: all operate on pandas/numpy frames. C4: statsforecast is designed for thousands of series and LightGBM fits once for all items (NFR-01). C5: Apache-2.0, BSD-3-Clause and MIT, all released in 2026. C6: the classical models are textbook material.
+> **Consequences.** `forecasting/pyproject.toml` gains pinned `statsforecast` and `lightgbm`; experiments pin seeds and configuration files (NFR-05). Rate forecasts are converted to weekly quantities and intervals in the forecasting API so that the risk calculation (FR-08) consumes one format; stock-out censoring is handled in preprocessing; model selection follows MAE and WAPE per `verification-and-evaluation-plan.md`.
+> **Status.** Accepted.
+
+## 6. Summary of decisions
 
 | # | Decision | Chosen option | Alternatives considered | Status |
 |---|---|---|---|---|
 | 1 | Server platform | FastAPI, Pydantic, SQLAlchemy 2.x, Alembic | Django + DRF; Flask | Accepted |
 | 2 | Data storage | PostgreSQL (`postgres:16` pinned; 17/18 acceptable) | MySQL; MongoDB; TimescaleDB as optional extension | Accepted |
 | 3 | Component interaction | REST/JSON (OpenAPI); in-process forecasting package; background runs | gRPC to a separate service; Celery with RabbitMQ/Redis (deferred) | Accepted |
-| 4 | Forecasting toolkit | To be added (Evelina Penkova) | statsforecast + statsmodels; Prophet; LightGBM + scikit-learn; sktime, darts | To be added |
+| 4 | Forecasting toolkit | statsforecast + statsmodels; LightGBM as ML candidate | Prophet; sktime; darts | Accepted |
 | 5 | Frontend framework | To be added (Birkhanym Kazhymukhamet) | Vue 3; React; Angular | To be added |
 | 6 | Charting library | To be added (Birkhanym Kazhymukhamet) | Chart.js; Apache ECharts; D3 | To be added |
