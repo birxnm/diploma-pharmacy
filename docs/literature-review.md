@@ -1,6 +1,6 @@
 # PharmaStock — Literature Review
 
-Task: PHA2-9 · Last updated: 2026-10-16 · Status: draft v0.2 (critical review sections 1–5 added; synthesis and conclusion to be written) · Author: Evelina Penkova · Reviewers: Birkhanym Kazhymukhamet, Abzal Bakhytov
+Task: PHA2-9 · Last updated: 2026-10-17 · Status: draft v0.3 (complete draft for supervisor review) · Author: Evelina Penkova · Reviewers: Birkhanym Kazhymukhamet, Abzal Bakhytov
 
 ---
 
@@ -112,11 +112,57 @@ Evidence on information systems is thin and descriptive. Shen et al. (2024) repo
 
 ## 6 Synthesis
 
-To be written (snapshot of 2026-10-17).
+### 6.1 What is known
+
+Five conclusions are supported by more than one source. First, for series with many zero periods the Croston family with its bias correction (SBA) and obsolescence correction (TSB) remains the reference, and recent neural and global methods add value mainly through probabilistic output and cross-learning, with modest gains in point accuracy (Croston, 1972; Syntetos & Boylan, 2005; Teunter et al., 2011; Türkmen et al., 2021; Spiliotis et al., 2022). Second, forecast accuracy and inventory performance are different criteria that can rank methods differently, so a forecasting system built for stock control must be judged on stock outcomes (Wallström & Segerstedt, 2010; Pinçe et al., 2021; Cappanera et al., 2022). Third, percentage errors are unusable and absolute errors are not sufficient for intermittent series; complementary measures and a check of the predictive distribution are needed (Hyndman & Koehler, 2006; Kolassa, 2016). Fourth, drug shortages have upstream causes with slow recovery, and monitoring of supply, demand and stocks and early-warning systems are recommended mitigations (Shukar et al., 2021; OECD, 2024), while recovery after a shortage is slow (FDA, 2019); shortage prediction from pharmacy data alone is feasible but weak on the rare severe class (Pall et al., 2023). Fifth, in Kazakhstan the need for medicines is planned annually from last year's consumption under a one-to-six-month stock norm, without statistical forecasting (MoH RK, 2021), and the only domestic forecasting study covers a single smooth series (Kumarkanova et al., 2025).
+
+### 6.2 Limitations of existing work
+
+Table 2 lists the limitations that recur across the sources and what each means for the project. Source numbers refer to Table 1.
+
+| Limitation | Where it appears | Consequence for PharmaStock |
+|---|---|---|
+| Evidence on intermittent methods comes from spare parts and retail, where a zero is a true zero | Sources 1–7 | Censored weeks must be handled before any of these methods is applied, and the published rankings need re-validation on pharmacy data |
+| Healthcare forecasting studies omit intermittent baselines, per-item errors, stock data and rolling-origin evaluation, and report R² or MAPE | Sources 10–12 | No literature target is transferable; the project's protocol must add what these studies lack |
+| National shortage and local stock-out are not distinguished | Sources 13–16 | Risk is defined locally and validated against the organization's own stock-outs |
+| Inventory-policy evidence assumes fast replenishment and patient-level data | Source 18 | The risk logic stays simple; the alert, not the reorder decision, is the deliverable |
+| No empirical evidence on shortage dynamics in Kazakhstan beyond policy texts and one series | Sources 12, 15, 17 | Real-data access (risk R-01) decides the external validity of the final results |
+| Several sources rest on simulation or were verified at abstract level only | Sources 3, 4, 7, 21, 22, 23 | Claims from these sources set direction; numerical targets are not taken from them |
+
+### 6.3 Implications for PharmaStock
+
+Table 3 maps the findings to the project decisions already fixed in `docs/requirements.md` (FR, NFR and FQ identifiers), `docs/verification-and-evaluation-plan.md` (E targets) and `docs/project-management/risks.md` (R identifiers).
+
+| Decision area | Finding from the review | Sources (Table 1) | Project decision | Requirement / document |
+|---|---|---|---|---|
+| Baselines | Croston-type estimators are the standard reference; SBA removes bias; TSB tracks obsolescence; M5 shows the value of many simple benchmarks | 1, 2, 4, 8, 26 | Five mandatory baselines (naive, seasonal naive, moving average, Croston, SBA) in every comparison; TSB, ADIDA, IMAPA, ETS and ARIMA as statistical candidates | FR-16, FQ-05, FQ-06 |
+| Demand classification | Items should be classified by ADI and CV² and methods chosen per class; aggregate accuracy hides slow-moving items | 3, 5, 10 | Classify items on the training window; report metrics per demand class and per medicine group; select the model per group on the validation window | FQ-08; evaluation plan, section 4.5.3 |
+| Metrics | MAPE is undefined at zero; MAE and WAPE can reward a zero forecast; complementary measures are needed | 6, 20, 21, 22, 26 | MAE and pooled WAPE (WAPE only when total actual consumption > 0), bias, MAE by horizon step, interval coverage and win rate; no MAPE; proper scoring rules optional in experiment reports | FR-16, FQ-08, E-07 |
+| Censored demand | Consumption during a stock-out is a lower bound on demand; learning it as zero biases forecasts downward | 23; 11 as a negative example | Flag stock-out weeks on import; exclude them from fitting and evaluation by default; imputation evaluated as an experiment; as-zero handling kept only as a control | FR-17, FQ-10, R-07 |
+| Weekly granularity and horizon | Weekly aggregation is used by the closest hospital study; the national planning cycle is annual with a one-to-six-month stock norm | 10, 17 | Recorded as the initial decision in the proposal (weekly step, 12-week horizon), to be confirmed with real data; Monday `period_start`; horizon configurable 1–52 weeks, consistent with the stock norm and the procurement lead time | FQ-01, FQ-03 |
+| Evaluation protocol | Blocked or rolling-origin validation is more robust than a single split, which the healthcare studies rely on | 24, 26, 13 | Time-based rolling-origin evaluation with at least three origins four weeks apart; validation window for selection; the final hold-out reported once; reproducible configurations and seeds | FQ-09, FQ-11, NFR-05 |
+| Global versus local models | Global models need many series; gains appear in cross-learning and probabilistic output | 6, 7, 9, 25 | One global LightGBM model on lag, rolling and calendar features with item identifiers, compared with per-item statistical models; a negative result is reported as a finding | FQ-06, R-03 |
+| Probabilistic output | Point forecasts are insufficient for a risk flag | 6, 22 | Point, lower and upper forecast at an 80% level for every item and week; the interval feeds the conservative risk variant | FQ-07, FR-07 |
+| Risk logic and alert evaluation | Stock outcomes, not forecast error, are the right criterion; days of supply and prior shortage episodes are strong predictors; recall on the severe class is the weak point | 5, 13, 18, 21 | Risk from projected stock against safety stock and lead time; precision and recall of High alerts against actual stock-outs, with recall prioritised; a days-of-supply rule as reference; prior stock-out episodes as a feature | FR-08, FR-09, FR-11, FQ-15, E-03, E-04 |
+| Data requirements | The healthcare studies lacked stock and delivery data; the regulation plans from consumption, stock and expected receipts; seasonal baselines need more than one year | 10–12, 17, 19 | Import per-item weekly consumption, stock snapshots, receipts, planned receipts and lead times; no patient-level data; at least two years of history requested from the partner | FR-01 to FR-04, FR-10, NFR-04, R-01, R-02 |
+| Acceptance targets | Reported accuracies are not comparable across studies | 10–12 | Numerical targets fixed after the first baseline experiment, not taken from the literature | Evaluation plan, section 4.8 |
 
 ## 7 Conclusion
 
-To be written (snapshot of 2026-10-17).
+The reviewed literature supports the premise of PharmaStock and sharpens its design. Intermittent-demand forecasting has well-understood baselines whose limits are documented; machine learning adds value mainly through probabilistic output and global training, and those gains have been shown on datasets far larger than a hospital formulary. The healthcare studies closest to the project forecast aggregates with tuned tree ensembles but omit the baselines, stock data and validation discipline that would make their results usable, and no Kazakhstan study addresses per-item intermittent consumption. The shortage literature explains why hospitals cannot wait for upstream fixes and why monitoring demand and stock is the recommended mitigation, while the national regulation shows that planning is annual, consumption-based and without statistical forecasting. The project's decisions follow from these findings: five simple baselines, classification by demand pattern, MAE and WAPE with the safeguards the measurement literature demands, explicit treatment of censored demand, rolling-origin evaluation, and validation of alerts against real stock-outs. The main open question is empirical: whether the gains reported for global and probabilistic models survive on a few hundred censored weekly series, which only the planned experiments, ideally on real data, can answer.
+
+## Source statistics
+
+| Statistic | Value |
+|---|---|
+| Sources in Table 1 | 27 |
+| Scientific sources (peer-reviewed journal articles, one conference paper, one academic textbook) | 24 |
+| Official documents (OECD and FDA reports, one regulation of the Republic of Kazakhstan) | 3 |
+| Published in the last five years (2021–2026) | 16 |
+| Published before 2021 (10 foundational scientific works and the FDA 2019 report) | 11 |
+| Added by targeted gap search (Table 1 nos. 3, 21, 22, 23) | 4 |
+| Sources on Kazakhstan (Table 1 nos. 12, 17, 27) | 3 |
+| By area: intermittent demand / methodology / medicine demand / shortages / hospital inventory | 7 / 9 / 3 / 6 / 2 |
 
 ## References
 
