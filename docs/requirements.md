@@ -1,6 +1,6 @@
 # PharmaStock — Requirements Specification
 
-Task: PHA2-11 · Last updated: 2026-10-17 · Status: draft v0.2 · Authors: Birkhanym Kazhymukhamet (editor), Abzal Bakhytov
+Task: PHA2-11 · Last updated: 2026-10-17 · Status: draft v0.3 · Authors: Birkhanym Kazhymukhamet (editor), Abzal Bakhytov, Evelina Penkova
 
 ---
 
@@ -29,6 +29,7 @@ The full scope boundary (in and out of scope) is given in section 5.4. The probl
 |---|---|
 | FR-xx | Functional requirement |
 | NFR-xx | Non-functional requirement |
+| FQ-xx | Forecasting requirement (section 5.6): a detailed decision that refines FR-06, FR-07, FR-16, FR-17, NFR-05 and NFR-06 for the forecasting module |
 | Priority | MoSCoW: **Must** (required for the prototype to be accepted), **Should** (important, planned for the prototype), **Could** (desirable, implemented if time allows), **Won't** (explicitly excluded in this project) |
 | Source | Where the requirement comes from: **supervisor plan** (approved plan and justification letter of 9 October 2026), **assumption** (team decision based on the domain analysis, open for revision), **interview-to-verify** (to be confirmed with pharmacy staff during stakeholder interviews, see `docs/evidence-of-relevance/interview-guide.md`) |
 | AC | Acceptance criterion, used by the verification plan (`docs/verification-and-evaluation-plan.md`) |
@@ -43,6 +44,7 @@ The full scope boundary (in and out of scope) is given in section 5.4. The probl
 | User scenarios and use cases | `docs/ux/user-scenarios.md`, `docs/ux/use-cases.md` |
 | Architecture, API contract, database schema | `docs/architecture/` |
 | Data specification (import formats, synthetic dataset) | `docs/data/data-specification.md` |
+| Forecasting module description and experiment plan | `forecasting/README.md`, `forecasting/experiments/` |
 | Verification and evaluation plan | `docs/verification-and-evaluation-plan.md` |
 | Task register | `docs/project-management/task-register.md`, [Linear project PharmaStock](https://linear.app/pharmacy-kz/project/pharmastock-03a3f33ce30b) |
 
@@ -135,7 +137,7 @@ Notes on sources:
 | NFR-09 | UI works in current Chrome, Firefox and Edge on desktop, responsive down to 1280 px | Should | Usability / compatibility |
 | NFR-10 | Interface in English first; Russian localisation planned | Could | Usability |
 
-Non-functional requirements are verified according to `docs/verification-and-evaluation-plan.md` (performance measurements on the synthetic dataset, code review for NFR-03/NFR-04, CI configuration for NFR-08, browser checks for NFR-09).
+Non-functional requirements are verified according to `docs/verification-and-evaluation-plan.md` (performance measurements on the synthetic dataset, code review for NFR-03/NFR-04, CI configuration for NFR-08, browser checks for NFR-09). Section 7 maps every requirement to its verification method.
 
 ---
 
@@ -238,6 +240,28 @@ Every error response has the same JSON body:
 | 422 | Request body or import file fails validation | `VALIDATION_ERROR`, `IMPORT_VALIDATION_FAILED` |
 | 500 | Unexpected server error; the body never contains stack traces | `INTERNAL_ERROR` |
 
+### 5.6 Forecasting requirements
+
+Owner: Evelina Penkova. These requirements refine FR-06, FR-07, FR-16, FR-17, NFR-05 and NFR-06 for the forecasting module (`forecasting/`), which the backend calls in-process. They are the contract between the backend and the module; the experiment plan in `forecasting/experiments/` and the data specification in `docs/data/data-specification.md` follow them.
+
+| ID | Requirement | Rationale / notes |
+|---|---|---|
+| FQ-01 | **Time step.** The forecasting step is one calendar week; every period is identified by `period_start`, the Monday of the week. The module receives, per item, a contiguous weekly series without missing weeks. | Weekly granularity matches procurement cycles and smooths daily noise of intermittent demand; a contiguous index is required so that lags and seasonal offsets are well defined. |
+| FQ-02 | **Series construction (backend responsibility).** For each item the backend builds the series from the first to the last available week: weeks without a `consumption_record` receive `quantity = 0`; `is_stock_out` is taken from the `stock_snapshot` of that week (`quantity_on_hand = 0`) and is `false` when no snapshot exists. Weeks without any stock snapshot are counted as gaps in the data-quality summary (FR-18) but are not treated as censored. | Consumption exports usually omit weeks with no dispensing (assumption, interview-to-verify, open question Q7). Censoring is only asserted when stock data prove the shelf was empty. |
+| FQ-03 | **Horizon.** The horizon is configurable per run between 1 and 52 weeks; the default is 12 weeks. | Initial decision of the proposal; 12 weeks covers the centralised procurement lead time with margin (open question Q4). |
+| FQ-04 | **Minimum history.** Items with fewer than `min_history_weeks` (default 12) non-censored weeks are forecast with the fallback baseline (`moving_average`, window 8) and flagged `insufficient_history`; `seasonal_naive` requires at least 53 weeks and otherwise falls back to `naive`. | Avoids fitting models on a handful of points while still returning a usable number for every item. |
+| FQ-05 | **Baselines.** The module implements the baselines `naive` (last non-censored value), `seasonal_naive` (value 52 weeks earlier), `moving_average(window)` (default window 8), `croston` and `sba` (Croston with the Syntetos–Boylan bias correction). Every candidate model is compared against all five baselines on the same windows. | Baselines are the reference that every model must beat; Croston-type methods are the standard reference for intermittent demand. |
+| FQ-06 | **Candidate models (planned).** Statistical models for intermittent and smooth series from `statsforecast` (Croston variants, ADIDA, IMAPA, TSB, ETS, AutoARIMA) and a global LightGBM model on lag, rolling and calendar features computed strictly from data before the forecast origin. Model selection per medicine group is based on the validation window; the production model is an explicit configuration value, not an automatic choice at run time. | Final choice is made after the hold-out evaluation (FR-16); results are documented in the experiment reports. |
+| FQ-07 | **Output.** For every item and horizon week the module returns `point ≥ 0`, `lower ≥ 0`, `upper ≥ point` at a configurable interval level (default 80 %), the model name used for the item, and flags (`insufficient_history`, number of censored weeks in the history). Rounding to whole units happens only at presentation in the interface. | Intervals are needed for the conservative risk variant (open question Q6); non-negativity follows from the domain. |
+| FQ-08 | **Metrics.** `mae = mean(abs(y − ŷ))`, `wape = sum(abs(y − ŷ)) / sum(y)` (returns `None` when `sum(y) = 0` in the window), `bias = mean(ŷ − y)`. Metrics are computed per item, per medicine group and overall; overall and group WAPE are pooled (sums over all weeks and items), not averages of per-item WAPE. Censored weeks are excluded from the evaluation set and their number is reported. | MAE is in the item's units and is easy to interpret; WAPE is scale-free and robust to zeros, unlike MAPE. |
+| FQ-09 | **Evaluation split.** Time-based, never shuffled. Rolling-origin evaluation with at least three origins spaced four weeks apart; at each origin the test window is the following 12 weeks (equal to the default horizon) and the validation window is the 12 weeks before the origin. All feature computation and model fitting use only data before the origin. The last origin's test window is the final hold-out reported in the thesis. | Prevents leakage and gives a more stable estimate than a single split. Exact dates are fixed in the experiment configuration once the dataset is final. |
+| FQ-10 | **Censored demand.** Weeks with `is_stock_out = true` are not used as zero observations. Default handling: the week is treated as missing during model fitting and excluded from the evaluation set. Alternative handling (imputation by the item's expected demand) is evaluated as an experiment; the chosen method is a configuration value recorded with every run. | Implements FR-17 on the module side; learning stock-out zeros as demand would bias forecasts downwards exactly for the items that already had shortages. |
+| FQ-11 | **Reproducibility.** Every experiment is defined by a versioned YAML configuration in `forecasting/experiments/` containing the dataset identifier, the split definition, model parameters and `seed` (default 42). All stochastic components use this seed. Results are saved as CSV/JSON together with the configuration hash, the git commit, the dataset identifier and the versions of the forecasting package and its main dependencies. A forecast run started from the backend stores the same configuration in `forecast_run.config_json`. | NFR-05; required for the thesis and article. |
+| FQ-12 | **Input validation.** `forecast_items` validates the input before any computation and raises `forecasting.data.validation.ValidationError` with a structured list of problems when: a required column is missing (`item_code`, `period_start`, `quantity`, `is_stock_out`); a `period_start` is not a Monday; a quantity is negative or not numeric; an (item, period) pair is duplicated; the weekly index of an item has a gap; the horizon is outside 1…52. No forecast is produced for any item when validation fails. | NFR-06; the backend maps the error to a failed run with the message (asynchronous run) or to HTTP 422 (synchronous validation). |
+| FQ-13 | **Interface.** `forecasting.api.forecast_items(history, horizon, config) -> ForecastResult`, where `history` is a `pandas.DataFrame` with the columns of FQ-12, `horizon` is an integer and `config` is a dictionary (model name, parameters, seed, censoring method, interval level). `ForecastResult` exposes `forecasts` (DataFrame: `item_code`, `period_start`, `point`, `lower`, `upper`), `model_name`, per-item information and warnings. The schema is defined in `forecasting/forecasting/data/schema.py`. | Single entry point keeps the backend independent of the model family. |
+| FQ-14 | **Performance.** A run for 1,000 items with 156 weeks of history and a 12-week horizon completes within 5 minutes on a 4 vCPU / 8 GB machine; measured on the synthetic dataset. | NFR-01. |
+| FQ-15 | **Alert quality.** In addition to forecast accuracy, the shortage alerts derived from the forecasts (FR-08) are evaluated on the test window by precision and recall of High alerts against actual stock-outs observed in the stock snapshots. | Links model quality to the user-facing outcome; the procedure is defined in the verification plan. |
+
 ---
 
 ## 6. Acceptance criteria
@@ -248,10 +272,9 @@ Acceptance criteria are written as a short checklist (AC-xx.n) and, where the ow
 |---|---|---|
 | FR-01, FR-02, FR-03, FR-04, FR-08, FR-09, FR-10, FR-14, FR-15 | Abzal Bakhytov | scenarios present |
 | FR-05 | Birkhanym Kazhymukhamet | checklist present |
-| FR-06, FR-07, FR-17 | Evelina Penkova | checklist present (draft) |
+| FR-06, FR-07, FR-16, FR-17, FR-18, NFR-05, NFR-06 | Evelina Penkova | scenarios present |
 | FR-11, FR-12, FR-13 | Abzal Bakhytov / Birkhanym Kazhymukhamet | to be added |
-| FR-16, FR-18 | Evelina Penkova | to be added |
-| NFR-01 … NFR-10 | per category owner | to be added |
+| NFR-01, NFR-02, NFR-03, NFR-04, NFR-07, NFR-08, NFR-09, NFR-10 | per category owner | to be added (verification method already fixed in section 7) |
 
 ### 6.1 FR-01 — Import consumption, stock and receipt data from CSV/XLSX files
 
@@ -446,11 +469,93 @@ Scenarios:
 - AC-06.3 A completed run contains one forecast row per item and per week of the horizon.
 - AC-06.4 Items with insufficient history are listed in the run summary with a reason; they are not silently skipped.
 
+Scenarios:
+
+**Scenario FR-06-S1 — run for all active items**
+
+- Given an authenticated pharmacist, 50 active items with at least 12 non-censored weeks of history each and the production model configured,
+- When `POST /api/v1/forecast-runs` is called with `{"horizon_weeks": 12}`,
+- Then the response is `202 Accepted` with the `forecast_run` (`id`, `started_at`, `horizon_weeks`, `model_name`, `config_json`, `status = "queued"`, `user_id`); the status passes through `running` to `completed`; `finished_at` is set; and exactly 50 × 12 `forecast` rows exist for the run, each with `point ≥ 0`, `lower ≥ 0` and `upper ≥ point`.
+
+**Scenario FR-06-S2 — run for selected items**
+
+- Given the items of FR-06-S1,
+- When the run is started with `{"horizon_weeks": 8, "item_ids": [1, 2, 3]}`,
+- Then only those three items are forecast (3 × 8 rows), an inactive item in the list is included because it was selected explicitly, and an unknown item id returns `422` before the run is created.
+
+**Scenario FR-06-S3 — invalid horizon**
+
+- Given a request with `horizon_weeks = 0` or `horizon_weeks = 53`,
+- When it is sent,
+- Then the response is `422` with a detail for `horizon_weeks` ("must be between 1 and 52") and no run is created.
+
+**Scenario FR-06-S4 — insufficient history**
+
+- Given an item with only 6 non-censored weeks of history,
+- When a run is completed,
+- Then the item has 12 forecast rows produced by the fallback baseline, `model_name` for that item is `moving_average`, and the run summary lists the item under `insufficient_history` with the number of available weeks.
+
+**Scenario FR-06-S5 — module error does not corrupt earlier runs**
+
+- Given a previous completed run and a new run in which the forecasting module raises `ValidationError`,
+- When the new run finishes,
+- Then its status is `failed`, the error message is stored in the run and shown in the interface, no `forecast` rows exist for the failed run, and the previous run and its risk assessments are unchanged and still served by default.
+
+**Scenario FR-06-S6 — one run at a time**
+
+- Given a run with status `queued` or `running`,
+- When another run is requested,
+- Then the response is `409` with `code = "RUN_IN_PROGRESS"`.
+
+**Scenario FR-06-S7 — configuration is stored**
+
+- Given a completed run,
+- When `GET /api/v1/forecast-runs/{id}` is called,
+- Then `config_json` contains the model name and parameters, `seed`, the censoring method, the interval level, `min_history_weeks` and the version of the forecasting package, so that the run can be reproduced (NFR-05).
+
+**Scenario FR-06-S8 — progress is visible**
+
+- Given a running run for 1,000 items,
+- When the run page is open,
+- Then the interface shows the status and the number of items processed, refreshed at least every 5 seconds without a manual reload.
+
 ### 6.7 FR-07 — View the forecast per item
 
 - AC-07.1 The item forecast view shows history and forecast on one chart: the point forecast, the lower and upper bounds of the interval, and a visual boundary between history and forecast.
 - AC-07.2 The view shows the model name, the run date, the horizon and a link to the run.
 - AC-07.3 The same values are available as a table and through `GET /api/v1/items/{id}/forecast`.
+
+Scenarios:
+
+**Scenario FR-07-S1 — API response**
+
+- Given an item with history and a completed run,
+- When `GET /api/v1/items/{id}/forecast` is called,
+- Then the response contains `run` (`id`, `model_name`, `started_at`, `finished_at`, `horizon_weeks`, `interval_level`), `item_model_name` (the model used for this item, which may be the fallback), `history` (list of `{period_start, quantity, is_stock_out}` for the last 52 weeks by default, `weeks` parameter to change), and `forecast` (list of `{period_start, point, lower, upper}` with exactly `horizon_weeks` entries in ascending order).
+
+**Scenario FR-07-S2 — chart**
+
+- Given the response of FR-07-S1,
+- When the item page is rendered,
+- Then one chart shows the history line, the point forecast line, the shaded interval between `lower` and `upper`, stock-out weeks marked as in FR-05, a vertical boundary at the forecast origin, and a legend that names the model and the interval level (for example "80 % interval").
+
+**Scenario FR-07-S3 — run selection**
+
+- Given two completed runs,
+- When the page is opened without a run parameter,
+- Then the latest completed run is shown; selecting an earlier run from the run selector (query parameter `run_id`) shows that run's forecast and metadata.
+
+**Scenario FR-07-S4 — item without forecast**
+
+- Given an item that was not part of any completed run,
+- When `GET /api/v1/items/{id}/forecast` is called,
+- Then the response is `200` with `run = null`, an empty `forecast` list and `history` populated, and the page shows the history with the message "No forecast available for this item yet".
+
+**Scenario FR-07-S5 — table view**
+
+- Given the response of FR-07-S1,
+- When the user switches to the table tab,
+- Then the table lists one row per forecast week with `period_start`, point, lower and upper values rounded to whole units, and the values match the API response.
 
 ### 6.8 FR-08 — Calculate shortage risk per item
 
@@ -664,34 +769,288 @@ Scenarios:
 - When a delete or update of an audit entry is attempted through the API,
 - Then no such endpoint exists (`404`/`405`), and the database role used by the application has no `DELETE` privilege on `audit_log` (verified by inspection of the deployment configuration).
 
-### 6.13 FR-17 — Flag stock-out periods (censored demand)
+### 6.13 FR-16 — Compare forecasting models against baselines on a hold-out period
+
+- AC-16.1 A comparison evaluates every candidate model and all five baselines (FQ-05) on the same rolling-origin windows (FQ-09) and reports MAE and WAPE overall, per medicine group and per item.
+- AC-16.2 WAPE is reported as "n/a" for any window in which the sum of actual consumption is zero (FQ-08).
+- AC-16.3 Comparison results are saved with their configuration (NFR-05) and the latest registered results are shown in the web interface.
+
+Scenarios:
+
+**Scenario FR-16-S1 — comparison on hold-out windows**
+
+- Given the synthetic dataset (or the real dataset once available) with at least 104 weeks of history, an experiment configuration listing the models `naive`, `seasonal_naive`, `moving_average`, `croston`, `sba` and at least one candidate model, and the rolling-origin split of FQ-09,
+- When the comparison is run with the single documented command from `forecasting/README.md`,
+- Then a results table is produced with one row per model and per origin containing `mae`, `wape` and `bias` overall, plus per-group and per-item tables, and the test window dates of every origin are stated in the results.
+
+**Scenario FR-16-S2 — WAPE undefined**
+
+- Given an item whose actual consumption in a test window sums to zero,
+- When metrics are computed,
+- Then `wape` for that item and window is `None`, the item is still included in `mae`, and the interface shows "n/a" instead of a number.
+
+**Scenario FR-16-S3 — censored weeks excluded**
+
+- Given a test window that contains weeks with `is_stock_out = true`,
+- When metrics are computed,
+- Then those weeks are excluded from `mae`, `wape` and `bias`, and the results table reports the number of excluded weeks per item.
+
+**Scenario FR-16-S4 — baselines are mandatory**
+
+- Given an experiment configuration that omits one of the five baselines,
+- When the comparison is started,
+- Then the run stops before training with a configuration error naming the missing baseline.
+
+**Scenario FR-16-S5 — results in the interface**
+
+- Given a saved comparison result registered for display,
+- When the "Model comparison" page is opened,
+- Then a table shows every model with MAE and WAPE overall and per medicine group, the dataset identifier, the test window dates and a note whether the data are synthetic; the backend serves it through `GET /api/v1/model-comparison` (endpoint to be added to the draft API contract).
+
+**Scenario FR-16-S6 — reproducibility of the comparison**
+
+- Given the same configuration and dataset,
+- When the comparison is run a second time,
+- Then every metric value equals the first run to at least six decimal places (see NFR-05).
+
+### 6.14 FR-17 — Flag stock-out periods (censored demand)
 
 - AC-17.1 A week whose stock snapshot shows zero quantity on hand is flagged `is_stock_out` for that item.
 - AC-17.2 Zero consumption in a flagged week is passed to the forecasting module as censored, not as an observed zero; the handling method is documented in the forecasting module.
 - AC-17.3 Flagged weeks are visible on the item page (FR-05) and counted in the data-quality summary (FR-18).
 
-### 6.14 Acceptance criteria to be added
+Scenarios:
 
-FR-11, FR-12, FR-13, FR-16, FR-18 and NFR-01 … NFR-10: to be added.
+**Scenario FR-17-S1 — flag set on import**
+
+- Given a `stock.csv` with a row `A10BA02,2026-03-02,0`,
+- When the file is imported,
+- Then the `stock_snapshot` for item `A10BA02` and `period_start = 2026-03-02` has `is_stock_out = true`, and rows with a positive quantity have `is_stock_out = false`.
+
+**Scenario FR-17-S2 — flag reaches the forecasting module**
+
+- Given an item with stock-out weeks,
+- When the backend builds the series for a forecast run (FQ-02),
+- Then the `history` DataFrame passed to `forecast_items` contains `is_stock_out = true` for those weeks, and `ForecastResult` reports the number of censored weeks for the item.
+
+**Scenario FR-17-S3 — censored zeros are not learned as demand**
+
+- Given an item with 20 weeks of history: 16 weeks with `quantity = 10` and 4 weeks with `quantity = 0` and `is_stock_out = true`, and `moving_average` with window 8 as the model,
+- When `forecast_items` is called with the default censoring method,
+- Then the point forecast for every horizon week equals 10 (the mean of the last 8 non-censored weeks), not the smaller value that would result from treating the censored weeks as observed zeros.
+
+**Scenario FR-17-S4 — censored weeks excluded from evaluation**
+
+- Given a test window with two censored weeks,
+- When metrics are computed (FQ-08),
+- Then the two weeks are not part of the error sums and are counted in the `censored_weeks` column of the results.
+
+**Scenario FR-17-S5 — visibility**
+
+- Given an item with stock-out weeks,
+- When the item page is opened,
+- Then those weeks are marked on the history chart and in the table, and the data-quality summary of the import that created the snapshots counts them under `stock_out_weeks`.
+
+### 6.15 FR-18 — Show a data-quality summary per import
+
+- AC-18.1 After every completed import the user sees coverage (period from, period to, number of weeks), items affected, gaps, stock-out weeks and outliers for the imported file.
+- AC-18.2 Outliers are flagged for review, not rejected; the rule is documented and configurable.
+- AC-18.3 The summary is stored in `import_batch.summary_json` and is available through `GET /api/v1/imports/{id}` and on the import page.
+
+Definitions: a *gap* is a week between the item's first and last week in the imported file for which the item has no row (these weeks are stored as zero consumption per FQ-02 and reported so that the user can check whether the export omits zero weeks or data are missing, open question Q7); an *outlier* is a weekly quantity greater than `outlier_factor` (default 5, key in `threshold_config`) times the item's median non-zero weekly quantity in the database, evaluated only for items with at least 8 non-zero weeks.
+
+Scenarios:
+
+**Scenario FR-18-S1 — summary content**
+
+- Given a completed `consumption` import,
+- When `GET /api/v1/imports/{id}` is called,
+- Then `summary_json` contains `rows_total`, `rows_imported`, `items_affected`, `period_from`, `period_to`, `weeks_total`, `items_with_gaps`, `gap_weeks_total`, `stock_out_weeks` (for items whose weeks have stock snapshots), `outliers` (list of `{item_code, period_start, quantity, median_nonzero}` limited to 100 entries plus `outliers_total`), and `items_without_consumption` (items whose rows are all zero).
+
+**Scenario FR-18-S2 — outlier flagged, not rejected**
+
+- Given an item whose median non-zero weekly quantity is 10 and an imported row with `quantity = 80` for that item,
+- When the file is imported,
+- Then the row is stored, the row appears in `outliers`, and the import page shows a warning banner with the number of outliers and a link to the list.
+
+**Scenario FR-18-S3 — configurable factor**
+
+- Given `threshold_config.outlier_factor = 10`,
+- When the file of FR-18-S2 is imported,
+- Then the row with `quantity = 80` is not flagged.
+
+**Scenario FR-18-S4 — stock import summary**
+
+- Given a completed `stock` import,
+- When the summary is read,
+- Then it contains `stock_out_weeks` and `items_with_stock_out`, and `outliers` is empty (outlier detection applies to consumption only).
+
+**Scenario FR-18-S5 — summary in the interface**
+
+- Given any completed import,
+- When the import page is opened,
+- Then the summary is shown as a card with coverage, counts and warnings, and the user can open the gap and outlier lists per item.
+
+### 6.16 NFR-05 — Reproducible forecast experiments
+
+- AC-N05.1 Every experiment is fully defined by a versioned configuration file with a fixed seed (FQ-11).
+- AC-N05.2 Repeating an experiment with the same configuration and dataset gives the same results.
+- AC-N05.3 Every saved result carries enough metadata to identify the code, configuration and data that produced it.
+
+Scenarios:
+
+**Scenario NFR-05-S1 — identical repeat**
+
+- Given an experiment configuration in `forecasting/experiments/` with `seed = 42` and the synthetic dataset generated with its documented seed,
+- When the experiment is run twice on the same machine,
+- Then the forecast files and the metric files of the two runs are equal (metrics to at least six decimal places; forecasts to at least six decimal places).
+
+**Scenario NFR-05-S2 — result metadata**
+
+- Given a finished experiment,
+- When the result directory is inspected,
+- Then it contains `config.yaml` (a copy of the configuration), `metadata.json` with the configuration hash, git commit, dataset identifier, start and end time and the versions of Python, pandas, numpy, scikit-learn, statsforecast and LightGBM, and the metric and forecast files.
+
+**Scenario NFR-05-S3 — single command**
+
+- Given a clean checkout and the documented environment,
+- When the command stated in `forecasting/README.md` is executed with the configuration path as its argument,
+- Then the experiment runs to completion without manual steps and writes its results.
+
+**Scenario NFR-05-S4 — backend run is reproducible**
+
+- Given a completed forecast run with its `config_json` and an unchanged database,
+- When a new run is started with the same `config_json`,
+- Then the point, lower and upper values of the two runs are equal for every item and week.
+
+**Scenario NFR-05-S5 — synthetic data are reproducible**
+
+- Given `forecasting/data/generate_synthetic.py` and a seed,
+- When the generator is run twice with the same seed and parameters,
+- Then the produced CSV files are byte-identical.
+
+### 6.17 NFR-06 — The forecasting module rejects malformed input
+
+- AC-N06.1 Validation happens before any model is fitted; a failing input produces no forecast for any item.
+- AC-N06.2 The error lists every problem found (up to a documented cap) with item code, period and reason.
+- AC-N06.3 The backend surfaces the error as a failed run or an HTTP 422, never as an empty or partial forecast.
+
+Scenarios:
+
+**Scenario NFR-06-S1 — missing column**
+
+- Given a `history` DataFrame without `is_stock_out`,
+- When `forecast_items` is called,
+- Then `ValidationError` is raised, its `problems` list contains `{"kind": "missing_column", "column": "is_stock_out"}`, and no `ForecastResult` is returned.
+
+**Scenario NFR-06-S2 — negative or non-numeric quantity**
+
+- Given a row with `quantity = -1` or `quantity = "abc"`,
+- When `forecast_items` is called,
+- Then `ValidationError` is raised with a problem naming the item code, the `period_start` and `kind = "invalid_quantity"`.
+
+**Scenario NFR-06-S3 — period not a Monday**
+
+- Given a row with `period_start = 2026-03-04` (a Wednesday),
+- When `forecast_items` is called,
+- Then `ValidationError` is raised with `kind = "period_not_monday"`.
+
+**Scenario NFR-06-S4 — duplicate period**
+
+- Given two rows with the same `item_code` and `period_start`,
+- When `forecast_items` is called,
+- Then `ValidationError` is raised with `kind = "duplicate_period"`.
+
+**Scenario NFR-06-S5 — gap in the weekly index**
+
+- Given an item whose series skips one week,
+- When `forecast_items` is called,
+- Then `ValidationError` is raised with `kind = "gap"` and the missing `period_start`.
+
+**Scenario NFR-06-S6 — horizon out of range**
+
+- Given `horizon = 0` or `horizon = 60`,
+- When `forecast_items` is called,
+- Then `ValidationError` is raised with `kind = "invalid_horizon"`.
+
+**Scenario NFR-06-S7 — all problems reported**
+
+- Given an input with three different problems in three items,
+- When `forecast_items` is called,
+- Then the single `ValidationError` lists all three problems (cap: 100 problems, with the total count).
+
+**Scenario NFR-06-S8 — backend mapping**
+
+- Given a forecast run whose input fails validation,
+- When the run is executed,
+- Then the run status is `failed`, the error message lists the problems, no `forecast` rows exist for the run, and the previous run remains the default (see FR-06-S5).
+
+### 6.18 Acceptance criteria to be added
+
+FR-11, FR-12, FR-13 and NFR-01, NFR-02, NFR-03, NFR-04, NFR-07, NFR-08, NFR-09, NFR-10: to be added. Their verification methods are already fixed in section 7.
 
 ---
 
-## 7. Open questions
+## 7. Traceability to the verification plan
+
+Every requirement is verified by at least one method of `docs/verification-and-evaluation-plan.md`. The methods are: **T** — automated test (pytest in `backend/tests/` and `forecasting/tests/`, Vitest in `frontend/`, run in CI per NFR-08); **D** — demonstration to the supervisor following a scripted scenario; **I** — inspection or review (code, configuration, documents); **E** — experiment on hold-out data with saved results; **U** — user testing with pharmacy staff (planned); **M** — measurement (timing, resource usage) on the synthetic dataset.
+
+The verification plan refers to the scenario IDs of section 6 (for example `FR-08-S1`); test functions are named after them (`test_fr08_s1_high_risk`). Where a scenario is not yet written, the plan refers to the requirement ID and the method only. The section identifiers of the verification plan will be inserted into this table when that document is finalised; both documents are updated together.
+
+| Requirement | Method(s) | Evidence (planned location) | Verification activity |
+|---|---|---|---|
+| FR-01 | T, D | `backend/tests/test_imports.py`; import demo | Functional tests; pre-defense demo |
+| FR-02 | T | `backend/tests/test_import_validation.py` | Functional tests |
+| FR-03 | T, D | `backend/tests/test_items.py` | Functional tests |
+| FR-04 | T | `backend/tests/test_suppliers.py` | Functional tests |
+| FR-05 | D, U | item page demo; user testing protocol | Demo; user evaluation |
+| FR-06 | T, D | `backend/tests/test_forecast_runs.py`; `forecasting/tests/test_api.py` | Functional tests; integration demo (Jan 2027) |
+| FR-07 | T, D, U | `backend/tests/test_forecast_views.py`; frontend tests; user testing | Functional tests; user evaluation |
+| FR-08 | T | `backend/tests/test_risk.py` (scenarios FR-08-S1…S6) | Functional tests; alert-quality evaluation (FQ-15) |
+| FR-09 | T, D, U | `backend/tests/test_risks_list.py`; risk list demo | Functional tests; user evaluation |
+| FR-10 | T | `backend/tests/test_planned_receipts.py` | Functional tests |
+| FR-11 | T, D | to be added with the criteria | Functional tests |
+| FR-12 | T, D | to be added with the criteria | Functional tests |
+| FR-13 | T, D | to be added with the criteria | Functional tests |
+| FR-14 | T, I | `backend/tests/test_auth.py`; review of password hashing and role checks | Functional tests; security review |
+| FR-15 | T, I | `backend/tests/test_audit_log.py`; review of database privileges | Functional tests; inspection |
+| FR-16 | E, T | `forecasting/experiments/` results; `forecasting/tests/test_metrics.py`, `test_split.py` | Forecast quality evaluation on hold-out windows |
+| FR-17 | T, E | `backend/tests/test_imports.py` (flag); `forecasting/tests/test_censoring.py`; censoring experiment | Functional tests; forecast quality evaluation |
+| FR-18 | T, D | `backend/tests/test_import_summary.py` | Functional tests |
+| NFR-01 | M | timing script on the synthetic dataset (1,000 items × 156 weeks) | Performance measurement |
+| NFR-02 | M | page timing with 5,000 synthetic items | Performance measurement |
+| NFR-03 | I, T | security review; `backend/tests/test_auth.py` | Security review |
+| NFR-04 | I | review of import formats, schema and data specification | Inspection |
+| NFR-05 | T, E | `forecasting/tests/test_reproducibility.py`; repeated experiment (NFR-05-S1) | Reproducibility check |
+| NFR-06 | T | `forecasting/tests/test_validation.py` (scenarios NFR-06-S1…S8) | Functional tests |
+| NFR-07 | D, I | `docker-compose.yml`; setup walkthrough on a clean Linux machine | Deployment check |
+| NFR-08 | I | `.github/workflows/ci.yml`; CI status on pull requests | Inspection |
+| NFR-09 | D | browser checks in Chrome, Firefox and Edge at 1280 px | Compatibility check |
+| NFR-10 | I | interface strings in English; localisation structure in place | Inspection |
+
+Forecasting requirements FQ-01…FQ-15 are verified through the rows of FR-06, FR-07, FR-16, FR-17, NFR-01, NFR-05 and NFR-06; the mapping FQ → test file is maintained in `forecasting/README.md`.
+
+---
+
+## 8. Open questions
 
 | # | Question | Affects | How it will be resolved |
 |---|---|---|---|
 | Q1 | Are lead times maintained per supplier, per item or per item-supplier pair in practice? | FR-04, FR-08 | Stakeholder interview |
 | Q2 | Should unknown item codes in `consumption.csv` (which carries name and unit) create catalogue entries automatically, or always be rejected? | FR-02, FR-03 | Stakeholder interview; default is to reject |
 | Q3 | Which report formats and columns are needed for management (CSV, XLSX, both)? | FR-13 | Stakeholder interview |
-| Q4 | Is a 12-week horizon with a weekly step adequate for centralised procurement cycles? | FR-06, FR-08 | Stakeholder interview; data analysis |
+| Q4 | Is a 12-week horizon with a weekly step adequate for centralised procurement cycles? | FR-06, FR-08, FQ-03 | Stakeholder interview; data analysis |
 | Q5 | Will real historical data be available before December 2026? | all experiments | Partner organization; tracked in `docs/project-management/risks.md` |
-| Q6 | Should the risk calculation use the point forecast or the upper bound of the interval for conservative planning? | FR-08, FR-11 | Decision after the first hold-out evaluation; point forecast until then, configurable later |
+| Q6 | Should the risk calculation use the point forecast or the upper bound of the interval for conservative planning? | FR-08, FR-11, FQ-07 | Decision after the first hold-out evaluation; point forecast until then, configurable later |
+| Q7 | Do the organization's exports omit weeks with zero dispensing, or is a missing week a data gap? | FR-18, FQ-02 | Stakeholder interview; inspection of a real export |
+| Q8 | Which censored-demand handling (exclusion or imputation) gives better hold-out accuracy on the available data? | FR-17, FQ-10 | Experiment; result recorded in the experiment report |
 
 ---
 
-## 8. Revision history
+## 9. Revision history
 
 | Date | Version | Author | Change |
 |---|---|---|---|
 | 2026-10-16 | 0.1 | Birkhanym Kazhymukhamet | Initial version: introduction, stakeholders and roles, FR-01…FR-18, NFR-01…NFR-10, constraints, acceptance criteria for Must requirements |
 | 2026-10-17 | 0.2 | Abzal Bakhytov | Added section 5.5 "Data and API constraints"; Given/When/Then scenarios for FR-01, FR-02, FR-03, FR-08, FR-09, FR-14; new criteria and scenarios for FR-04, FR-10, FR-15; open question Q6 |
+| 2026-10-17 | 0.3 | Evelina Penkova | Added section 5.6 "Forecasting requirements" (FQ-01…FQ-15); scenarios for FR-06, FR-07, FR-17; new criteria and scenarios for FR-16, FR-18, NFR-05, NFR-06; section 7 "Traceability to the verification plan"; open questions Q7, Q8 |
