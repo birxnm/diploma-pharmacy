@@ -1,0 +1,73 @@
+flowchart LR
+    %% PHA2-13 · PharmaStock use case diagram · Last updated: 2026-10-18
+    %% Rendered copy: docs/diagrams/export/use-case-diagram.svg
+    %% Notation (UML use case diagram drawn as a Mermaid flowchart):
+    %%   actors are rectangles with a person icon, use cases are stadium-shaped nodes
+    %%   inside the system boundary PharmaStock, solid lines are associations,
+    %%   dotted arrows are «include» (base use case -> included use case)
+    %%   and «extend» (extending use case -> base use case).
+    %% Authentication (FR-14) is a precondition of every use case and is not drawn.
+
+    Pharmacist["👤 Pharmacist<br/>(head of pharmacy, pharmacy staff)"]
+    Procurement["👤 Procurement specialist"]
+    DeptHead["👤 Department head<br/>(view only)"]
+    Admin["👤 Administrator"]
+
+    subgraph PharmaStock
+        UC01(["Import data"])
+        UC02(["Review data quality"])
+        UC03(["Manage catalogue"])
+        UC04(["Manage suppliers and lead times"])
+        UC05(["View stock and history"])
+        UC06(["Run forecast"])
+        UC07(["View forecast"])
+        UC08(["View shortage risks"])
+        UC09(["Record planned delivery"])
+        UC10(["Configure thresholds"])
+        UC11(["Receive notifications"])
+        UC12(["Export report"])
+        UC13(["Manage users"])
+        UC14(["View audit log"])
+    end
+
+    %% Associations
+    Pharmacist --- UC01
+    Pharmacist --- UC03
+    Pharmacist --- UC04
+    Pharmacist --- UC05
+    Pharmacist --- UC06
+    Pharmacist --- UC07
+    Pharmacist --- UC08
+    Pharmacist --- UC09
+    Pharmacist --- UC10
+    Pharmacist --- UC11
+    Pharmacist --- UC12
+
+    Procurement --- UC04
+    Procurement --- UC05
+    Procurement --- UC07
+    Procurement --- UC08
+    Procurement --- UC09
+    Procurement --- UC11
+    Procurement --- UC12
+
+    DeptHead --- UC05
+    DeptHead --- UC07
+    DeptHead --- UC08
+    DeptHead --- UC11
+
+    Admin --- UC13
+    Admin --- UC14
+
+    %% Include and extend relationships
+    UC02 -.->|"«extend»"| UC01
+    UC07 -.->|"«include»"| UC05
+    UC09 -.->|"«extend»"| UC08
+    UC12 -.->|"«extend»"| UC08
+    UC12 -.->|"«extend»"| UC07
+
+    classDef actor fill:#f8f9fa,stroke:#495057,stroke-width:1px,color:#212529
+    classDef usecase fill:#e7f1ff,stroke:#1f5fa8,stroke-width:1px,color:#212529
+    class Pharmacist,Procurement,DeptHead,Admin actor
+    class UC01,UC02,UC03,UC04,UC05,UC06,UC07,UC08,UC09,UC10,UC11,UC12,UC13,UC14 usecase
+    style PharmaStock fill:#ffffff,stroke:#1f5fa8,stroke-width:1px

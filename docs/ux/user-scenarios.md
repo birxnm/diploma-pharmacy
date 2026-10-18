@@ -1,8 +1,8 @@
 # User scenarios
 
-_PHA2-13 · Last updated: 2026-10-17 · Author: Birkhanym Kazhymukhamet_
+_PHA2-13 · Last updated: 2026-10-18 · Author: Birkhanym Kazhymukhamet_
 
-This document describes how the target users of **PharmaStock** are expected to work with the system, written as narrative scenarios. The scenarios are derived from the problem statement in the [project proposal](../proposal.md) and from the stakeholder map in [evidence-of-relevance/stakeholders.md](../evidence-of-relevance/stakeholders.md). They are the team's current understanding of pharmacy work and remain **assumptions** until they are checked in the planned discussions D-1 to D-5 (see the [interview log](../evidence-of-relevance/interview-log.md)); each scenario ends with the questions that the discussions must answer. The use cases derived from these scenarios will be documented in [use-cases.md](./use-cases.md) (planned under the same task).
+This document describes how the target users of **PharmaStock** are expected to work with the system, written as narrative scenarios. The scenarios are derived from the problem statement in the [project proposal](../proposal.md) and from the stakeholder map in [evidence-of-relevance/stakeholders.md](../evidence-of-relevance/stakeholders.md). They are the team's current understanding of pharmacy work and remain **assumptions** until they are checked in the planned discussions D-1 to D-5 (see the [interview log](../evidence-of-relevance/interview-log.md)); each scenario ends with the questions that the discussions must answer. The use cases derived from these scenarios, together with the use case diagram, are documented in [use-cases.md](./use-cases.md).
 
 ## 1. Purpose and conventions
 
@@ -205,7 +205,7 @@ Conventions used below:
 | FR-17 Flag stock-out periods so that zero consumption during a stock-out is treated as censored demand | Must | S-01, S-02 |
 | FR-18 Show a data-quality summary per import: coverage, gaps, outliers | Should | S-02 |
 
-All Must requirements appear in at least one scenario.
+All Must requirements appear in at least one scenario. The mapping of scenarios to use cases is given in the Scenario field of the detailed specifications in [use-cases.md](./use-cases.md), section 6.
 
 ## 6. Outside the scenarios
 
@@ -213,7 +213,7 @@ The following are deliberately not described, because they are out of scope of t
 
 ## 7. Next steps
 
-- Derive the use cases and the use case diagram from these scenarios ([use-cases.md](./use-cases.md), `docs/diagrams/src/use-case-diagram.mmd`).
+- The use cases and the use case diagram derived from these scenarios are in [use-cases.md](./use-cases.md) and `docs/diagrams/src/use-case-diagram.mmd`.
 - Produce static mockups of the screens named in the scenarios (dashboard, imports, item page, risk list, planned deliveries, thresholds, users) in `prototype/`.
 - After discussions D-1 to D-5, revise the scenarios and record the verified findings in the interview log.
 
