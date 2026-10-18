@@ -1,0 +1,49 @@
+# PHA2-3 - Last updated: 2026-10-18
+# Local development services for PharmaStock.
+#
+# Variables come from the .env file in the repository root: copy .env.example
+# to .env and replace the placeholders. Docker Compose reads .env automatically.
+#
+#   docker compose up -d db      # start PostgreSQL 16
+#   docker compose ps            # wait until the db service reports "healthy"
+#   docker compose logs -f db    # follow the database log
+#   docker compose down          # stop; add -v to delete the data volume as well
+
+services:
+  db:
+    image: postgres:16
+    container_name: pharmastock-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER:?Set POSTGRES_USER in .env, see .env.example}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env, see .env.example}"
+      POSTGRES_DB: "${POSTGRES_DB:?Set POSTGRES_DB in .env, see .env.example}"
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # backend (planned): the FastAPI service will be added as a second service
+  # once the first endpoints beyond /health exist. Until then it runs on the
+  # host with `uvicorn app.main:app --reload` from backend/ (see backend/README.md)
+  # and connects to the published port 5432 of the db service.
+  #
+  # backend:
+  #   build: ./backend
+  #   env_file: .env
+  #   environment:
+  #     DATABASE_URL: "postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
+  #   ports:
+  #     - "8000:8000"
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+
+volumes:
+  pgdata:
