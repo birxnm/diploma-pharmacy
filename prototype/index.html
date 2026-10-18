@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<!--
+  PharmaStock prototype - Dashboard
+  PHA2-18 - Last updated: 2026-10-18
+  Static mockup. All numbers, dates and item names are illustrative sample
+  values (same scenario on every screen); nothing is computed or loaded.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard - PharmaStock prototype</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">P</span>
+      <span class="brand-name">PharmaStock</span>
+      <span class="brand-tag">mockup</span>
+    </div>
+    <nav class="nav" aria-label="Main navigation">
+      <a class="nav-link is-active" href="index.html" aria-current="page">Dashboard</a>
+      <a class="nav-link" href="risks.html">Risks <span class="count">4</span></a>
+      <a class="nav-link" href="items.html">Catalogue</a>
+      <a class="nav-link" href="item.html">Item page</a>
+      <a class="nav-link" href="forecast.html">Forecast runs</a>
+      <a class="nav-link" href="imports.html">Imports</a>
+      <div class="nav-section">Administration</div>
+      <a class="nav-link" href="settings.html">Settings</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user">
+        <span class="avatar" aria-hidden="true">HP</span>
+        <div>
+          <div class="user-name">Head of pharmacy</div>
+          <div>role: pharmacist</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="content">
+
+    <header class="topbar">
+      <div>
+        <h1>Dashboard</h1>
+        <p class="subtitle">Monday, 19 October 2026 &middot; data up to the week of 12 Oct 2026 &middot; latest import 19 Oct 2026 10:31</p>
+      </div>
+      <div class="topbar-actions">
+        <a class="btn" href="imports.html">New import</a>
+        <a class="btn btn-primary" href="forecast.html">Run forecast</a>
+      </div>
+    </header>
+
+    <!-- KPI cards -->
+    <section class="grid grid-kpi section" aria-label="Key figures">
+      <div class="card kpi">
+        <div class="kpi-label">Items tracked</div>
+        <div class="kpi-value">30</div>
+        <div class="kpi-note">active items in the <a href="items.html">catalogue</a> (31 incl. inactive)</div>
+      </div>
+      <div class="card kpi">
+        <div class="kpi-label">Items at high risk</div>
+        <div class="kpi-value is-high">4</div>
+        <div class="kpi-note">Medium 7 &middot; Low 19 &middot; <a href="risks.html">open risk list</a></div>
+      </div>
+      <div class="card kpi">
+        <div class="kpi-label">Last forecast run</div>
+        <div class="kpi-value">19 Oct 2026</div>
+        <div class="kpi-note">run #12 at 10:55 &middot; model <code>sba</code> &middot; horizon 12 weeks &middot; <a href="forecast.html">all runs</a></div>
+      </div>
+      <div class="card kpi">
+        <div class="kpi-label">Data coverage</div>
+        <div class="kpi-value">97%</div>
+        <div class="kpi-note">156 weeks (23 Oct 2023 &ndash; 12 Oct 2026) &middot; 11 stock-out weeks flagged &middot; <a href="imports.html">imports</a></div>
+      </div>
+    </section>
+
+    <!-- Top items at risk + notifications -->
+    <section class="grid grid-2-1 section">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2>Top items at risk</h2>
+            <p class="card-sub">From forecast run #12 (19 Oct 2026 10:55), ordered by risk level and expected stock-out date</p>
+          </div>
+          <a class="btn btn-sm" href="risks.html">All 11 items at risk</a>
+        </div>
+        <div class="card-body flush table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Item</th>
+                <th scope="col" class="num">Current stock</th>
+                <th scope="col" class="num">Weekly forecast</th>
+                <th scope="col">Expected stock-out</th>
+                <th scope="col">Risk</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><a class="item-name" href="item.html">Salbutamol 100 mcg/dose inhaler</a><span class="item-code">MED-0028</span></td>
+                <td class="num">9<span class="unit">inhaler</span></td>
+                <td class="num">6.2</td>
+                <td class="nowrap">19 Oct 2026 <span class="subtle">(this week)</span></td>
+                <td><span class="badge badge-high">High</span></td>
+              </tr>
+              <tr>
+                <td><a class="item-name" href="item.html">Amoxicillin 500 mg capsules</a><span class="item-code">MED-0001</span></td>
+                <td class="num">64<span class="unit">pack</span></td>
+                <td class="num">21.4</td>
+                <td class="nowrap">26 Oct 2026</td>
+                <td><span class="badge badge-high">High</span></td>
+              </tr>
+              <tr>
+                <td><a class="item-name" href="item.html">Insulin glargine 100 IU/ml 3 ml</a><span class="item-code">MED-0012</span></td>
+                <td class="num">26<span class="unit">cartridge</span></td>
+                <td class="num">9.8</td>
+                <td class="nowrap">26 Oct 2026</td>
+                <td><span class="badge badge-high">High</span></td>
+              </tr>
+              <tr>
+                <td><a class="item-name" href="item.html">Sodium chloride 0.9% 500 ml</a><span class="item-code">MED-0015</span></td>
+                <td class="num">380<span class="unit">bottle</span></td>
+                <td class="num">118.5</td>
+                <td class="nowrap">2 Nov 2026</td>
+                <td><span class="badge badge-high">High</span></td>
+              </tr>
+              <tr>
+                <td><a class="item-name" href="item.html">Ceftriaxone 1 g powder for injection</a><span class="item-code">MED-0002</span></td>
+                <td class="num">180<span class="unit">vial</span></td>
+                <td class="num">34.0</td>
+                <td class="nowrap">16 Nov 2026</td>
+                <td><span class="badge badge-medium">Medium</span></td>
+              </tr>
+              <tr>
+                <td><a class="item-name" href="item.html">Oseltamivir 75 mg capsules</a><span class="item-code">MED-0030</span></td>
+                <td class="num">25<span class="unit">pack</span></td>
+                <td class="num">4.1</td>
+                <td class="nowrap">23 Nov 2026</td>
+                <td><span class="badge badge-medium">Medium</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card-footer">
+          <span>High: stock-out expected within the item's lead time &middot; Medium: within the 12-week horizon &middot; Low: not within the horizon</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2>Notifications</h2>
+            <p class="card-sub">4 unread &middot; created by run #12 for high-risk items</p>
+          </div>
+          <button class="btn btn-sm" type="button">Mark all as read</button>
+        </div>
+        <div class="card-body">
+          <ul class="notif-list">
+            <li><span class="notif-dot" aria-hidden="true"></span><div><a href="item.html">Salbutamol 100 mcg/dose inhaler</a> is at <strong>High</strong> risk: stock-out expected in the week of 19 Oct 2026.<span class="when">19 Oct 2026 10:56</span></div></li>
+            <li><span class="notif-dot" aria-hidden="true"></span><div><a href="item.html">Amoxicillin 500 mg capsules</a> is at <strong>High</strong> risk: stock-out expected in the week of 26 Oct 2026.<span class="when">19 Oct 2026 10:56</span></div></li>
+            <li><span class="notif-dot" aria-hidden="true"></span><div><a href="item.html">Insulin glargine 100 IU/ml 3 ml</a> is at <strong>High</strong> risk: stock-out expected in the week of 26 Oct 2026; planned delivery of 60 arrives 9 Nov 2026.<span class="when">19 Oct 2026 10:56</span></div></li>
+            <li><span class="notif-dot" aria-hidden="true"></span><div><a href="item.html">Sodium chloride 0.9% 500 ml</a> is at <strong>High</strong> risk: stock-out expected in the week of 2 Nov 2026.<span class="when">19 Oct 2026 10:56</span></div></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Chart + latest import -->
+    <section class="grid grid-2-1 section">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2>Projected stock &middot; Insulin glargine 100 IU/ml 3 ml</h2>
+            <p class="card-sub">Current stock 26 cartridges &middot; forecast 9.8 per week &middot; safety stock 9.8 (1 week) &middot; lead time 28 days &middot; planned delivery of 60 on 9 Nov 2026</p>
+          </div>
+          <a class="btn btn-sm" href="item.html">Open item</a>
+        </div>
+        <div class="card-body">
+          <!--
+            Placeholder chart drawn as inline SVG (no script, no library).
+            Plot area: x 52..744, y 24..232; y scale 0..60 cartridges.
+            Points are the 13 Mondays from 12 Oct 2026 (current stock) to 4 Jan 2027.
+            Projected stock below zero is drawn at zero (unmet demand).
+          -->
+          <svg class="chart" viewBox="0 0 760 270" role="img" aria-labelledby="chart1-title chart1-desc">
+            <title id="chart1-title">Projected stock of Insulin glargine 100 IU/ml 3 ml over the 12-week horizon</title>
+            <desc id="chart1-desc">The projected stock falls from 26 to below the safety stock of 9.8 in the week of 26 October 2026, reaches zero in the week of 2 November, rises to 46.8 with the planned delivery of 60 on 9 November and falls below the safety stock again in the week of 7 December 2026.</desc>
+
+            <!-- lead-time window: 4 weeks from 19 Oct to 16 Nov 2026 -->
+            <rect class="window" x="109.7" y="24" width="230.6" height="208"></rect>
+            <text class="annotation" x="114" y="38">lead time (28 days)</text>
+
+            <!-- horizontal grid and y axis labels -->
+            <line class="grid-line" x1="52" y1="232" x2="744" y2="232"></line>
+            <line class="grid-line" x1="52" y1="162.7" x2="744" y2="162.7"></line>
+            <line class="grid-line" x1="52" y1="93.3" x2="744" y2="93.3"></line>
+            <line class="grid-line" x1="52" y1="24" x2="744" y2="24"></line>
+            <text class="axis-label" x="44" y="236" text-anchor="end">0</text>
+            <text class="axis-label" x="44" y="166.7" text-anchor="end">20</text>
+            <text class="axis-label" x="44" y="97.3" text-anchor="end">40</text>
+            <text class="axis-label" x="44" y="28" text-anchor="end">60</text>
+
+            <!-- x axis labels (every second week) -->
+            <text class="axis-label" x="52" y="252" text-anchor="middle">12 Oct</text>
+            <text class="axis-label" x="167.3" y="252" text-anchor="middle">26 Oct</text>
+            <text class="axis-label" x="282.7" y="252" text-anchor="middle">9 Nov</text>
+            <text class="axis-label" x="398" y="252" text-anchor="middle">23 Nov</text>
+            <text class="axis-label" x="513.3" y="252" text-anchor="middle">7 Dec</text>
+            <text class="axis-label" x="628.7" y="252" text-anchor="middle">21 Dec</text>
+            <text class="axis-label" x="744" y="252" text-anchor="middle">4 Jan</text>
+
+            <!-- safety stock reference (9.8 cartridges) -->
+            <line class="reference-line" x1="52" y1="198" x2="744" y2="198"></line>
+            <text class="annotation" x="740" y="211" text-anchor="end">safety stock 9.8</text>
+
+            <!-- planned delivery marker (9 Nov 2026, +60) -->
+            <line class="event-line" x1="282.7" y1="24" x2="282.7" y2="232"></line>
+            <text class="annotation" x="287" y="62">planned delivery +60</text>
+
+            <!-- projected stock -->
+            <polyline class="series-line is-forecast" points="52,141.9 109.7,175.8 167.3,209.8 225,232 282.7,69.8 340.3,103.7 398,137.7 455.7,171.7 513.3,205.7 571,232 628.7,232 686.3,232 744,232"></polyline>
+            <circle class="series-marker" cx="52" cy="141.9" r="4"></circle>
+            <circle class="series-marker" cx="109.7" cy="175.8" r="4"></circle>
+            <circle class="series-marker" cx="282.7" cy="69.8" r="4"></circle>
+            <circle class="series-marker" cx="340.3" cy="103.7" r="4"></circle>
+            <circle class="series-marker" cx="398" cy="137.7" r="4"></circle>
+            <circle class="series-marker" cx="455.7" cy="171.7" r="4"></circle>
+
+            <!-- expected stock-out: first week at or below the safety stock -->
+            <circle class="marker-high" cx="167.3" cy="209.8" r="6"></circle>
+            <text class="annotation is-high" x="178" y="206">stock-out expected 26 Oct</text>
+            <circle class="marker-high" cx="513.3" cy="205.7" r="6"></circle>
+            <text class="annotation is-high" x="524" y="190">below safety stock again 7 Dec</text>
+          </svg>
+          <div class="legend" aria-hidden="true">
+            <span class="legend-item"><span class="legend-swatch is-dashed"></span>Projected stock (forecast)</span>
+            <span class="legend-item"><span class="legend-swatch is-reference"></span>Safety stock</span>
+            <span class="legend-item"><span class="legend-swatch is-marker"></span>Week at or below safety stock</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span>Projected stock = current stock + planned receipts due by the week &minus; cumulative forecast up to the week</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2>Latest import</h2>
+            <p class="card-sub">Batches #27&ndash;#29, three files uploaded on 19 Oct 2026</p>
+          </div>
+          <a class="btn btn-sm" href="imports.html">Import history</a>
+        </div>
+        <div class="card-body">
+          <dl class="kv">
+            <dt>Files</dt>
+            <dd>consumption_2026-09.csv, stock_2026-09.csv, receipts_2026-09.csv</dd>
+            <dt>Period</dt>
+            <dd>6 weeks, 7 Sep &ndash; 12 Oct 2026</dd>
+            <dt>Status</dt>
+            <dd><span class="pill pill-ok">completed</span></dd>
+            <dt>Rows</dt>
+            <dd>372 read &middot; 372 accepted</dd>
+            <dt>Unknown items</dt>
+            <dd>0</dd>
+            <dt>Gaps</dt>
+            <dd>2 item-weeks</dd>
+            <dt>Outliers</dt>
+            <dd>1 (Paracetamol 500 mg tablets, week of 21 Sep 2026)</dd>
+            <dt>Stock-out weeks</dt>
+            <dd>1 flagged (Salbutamol 100 mcg/dose inhaler, week of 28 Sep 2026)</dd>
+            <dt>Imported by</dt>
+            <dd>Head of pharmacy</dd>
+          </dl>
+        </div>
+        <div class="card-footer">
+          <span>Zero consumption in flagged stock-out weeks is treated as censored demand, not as zero demand.</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>
