@@ -1,0 +1,171 @@
+%% PHA2-14 | Entity-relationship diagram of the PharmaStock database | Last updated: 2026-10-18
+%% Source of docs/diagrams/export/er-diagram.svg (the export is produced from this file).
+%% Tables, column types, constraints and indexes are described in docs/architecture/database-schema.md;
+%% the same diagram is embedded there so that GitHub renders it.
+%% Notation: PK primary key, FK foreign key, UK unique column. Solid line = mandatory parent
+%% (NOT NULL foreign key), dashed line = optional parent (nullable foreign key).
+%% Column types are PostgreSQL types; numeric precision and CHECK constraints are in the schema document.
+erDiagram
+    medicine_item {
+        int id PK
+        varchar(64) code UK "item code of the accounting system"
+        varchar(255) name
+        varchar(32) unit "unit of measure, for example pack or vial"
+        varchar(128) group "medicine group used for error analysis"
+        boolean is_active "inactive items keep history but are not forecast"
+    }
+
+    supplier {
+        int id PK
+        varchar(255) name UK
+    }
+
+    item_supplier {
+        int item_id PK, FK
+        int supplier_id PK, FK
+        smallint lead_time_days
+        boolean is_primary "at most one primary supplier per item"
+    }
+
+    import_batch {
+        int id PK
+        varchar(255) file_name
+        varchar(32) source_type "consumption, stock, receipts, planned_receipts"
+        timestamptz imported_at
+        int user_id FK "null for command-line imports"
+        varchar(16) status "pending, processing, completed, failed"
+        jsonb summary_json "validation errors and data-quality summary"
+    }
+
+    consumption_record {
+        bigint id PK
+        int item_id FK
+        date period_start "Monday of the ISO week"
+        numeric quantity
+        int import_batch_id FK
+    }
+
+    stock_snapshot {
+        bigint id PK
+        int item_id FK
+        date period_start "Monday of the ISO week"
+        numeric quantity_on_hand "closing balance of the week"
+        boolean is_stock_out "censored demand flag"
+        int import_batch_id FK
+    }
+
+    receipt {
+        bigint id PK
+        int item_id FK
+        date received_on
+        numeric quantity
+        int supplier_id FK "null when the file names no supplier"
+        int import_batch_id FK
+    }
+
+    planned_receipt {
+        int id PK
+        int item_id FK
+        date expected_on
+        numeric quantity
+        int supplier_id FK "null when the supplier is not known"
+        varchar(16) status "planned, received, cancelled"
+    }
+
+    forecast_run {
+        int id PK
+        timestamptz started_at
+        timestamptz finished_at "null while the run is not finished"
+        smallint horizon_weeks "12 by default"
+        varchar(64) model_name
+        jsonb config_json "seed, model parameters, data snapshot"
+        varchar(16) status "queued, running, completed, failed, cancelled (reserved)"
+        int user_id FK "null for scheduled runs"
+    }
+
+    forecast {
+        bigint id PK
+        int run_id FK
+        int item_id FK
+        date period_start "Monday of the forecast week"
+        numeric point
+        numeric lower "null when the model gives no interval"
+        numeric upper "null when the model gives no interval"
+    }
+
+    risk_assessment {
+        bigint id PK
+        int run_id FK
+        int item_id FK
+        varchar(8) risk_level "high, medium, low"
+        date expected_stockout_date "null when no stock-out is expected"
+        jsonb projected_stock_json "projected stock per week and inputs used"
+        timestamptz computed_at
+    }
+
+    notification {
+        bigint id PK
+        int user_id FK
+        int item_id FK
+        bigint risk_assessment_id FK
+        timestamptz created_at
+        timestamptz read_at "null until the user reads it"
+    }
+
+    app_user {
+        int id PK
+        varchar(255) email UK "unique case-insensitively"
+        varchar(255) full_name
+        varchar(255) password_hash
+        varchar(16) role "administrator, pharmacist, viewer"
+        boolean is_active
+        timestamptz created_at
+    }
+
+    audit_log {
+        bigint id PK
+        int user_id FK "null for system actions"
+        varchar(64) action "entity.verb, for example import.create"
+        varchar(64) entity "table name"
+        bigint entity_id "row id in that table, no foreign key"
+        timestamptz created_at
+        jsonb details_json
+    }
+
+    threshold_config {
+        int id PK
+        varchar(64) key UK
+        jsonb value_json
+        int updated_by FK "null when set by the initial migration"
+        timestamptz updated_at
+    }
+
+    %% Catalogue and suppliers
+    medicine_item ||--o{ item_supplier : "is supplied by"
+    supplier ||--o{ item_supplier : "supplies"
+
+    %% Imported time series
+    medicine_item ||--o{ consumption_record : "has weekly consumption"
+    medicine_item ||--o{ stock_snapshot : "has weekly stock"
+    medicine_item ||--o{ receipt : "receives"
+    medicine_item ||--o{ planned_receipt : "expects"
+    supplier |o..o{ receipt : "delivered"
+    supplier |o..o{ planned_receipt : "will deliver"
+    import_batch ||--o{ consumption_record : "loads"
+    import_batch ||--o{ stock_snapshot : "loads"
+    import_batch ||--o{ receipt : "loads"
+    app_user |o..o{ import_batch : "uploads"
+
+    %% Forecasting and shortage risk
+    forecast_run ||--o{ forecast : "produces"
+    forecast_run ||--o{ risk_assessment : "produces"
+    medicine_item ||--o{ forecast : "is forecast in"
+    medicine_item ||--o{ risk_assessment : "is assessed in"
+    app_user |o..o{ forecast_run : "starts"
+
+    %% Notifications, audit trail and configuration
+    risk_assessment ||--o{ notification : "triggers"
+    app_user ||--o{ notification : "receives"
+    medicine_item ||--o{ notification : "concerns"
+    app_user |o..o{ audit_log : "performs"
+    app_user |o..o{ threshold_config : "last updated by"
