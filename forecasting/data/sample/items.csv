@@ -1,0 +1,21 @@
+item_code,item_name,unit,group,is_active,supplier,lead_time_days
+MED-0001,Amoxicillin 500 mg capsules,pack,Antibacterials,true,SK-Pharmacy,42
+MED-0002,Ceftriaxone 1 g powder for injection,vial,Antibacterials,true,Distributor A,21
+MED-0003,Azithromycin 500 mg tablets,pack,Antibacterials,true,Distributor A,21
+MED-0004,Ciprofloxacin 500 mg tablets,pack,Antibacterials,true,SK-Pharmacy,56
+MED-0005,Meropenem 1 g powder for injection,vial,Antibacterials,true,SK-Pharmacy,49
+MED-0006,Vancomycin 1 g powder for injection,vial,Antibacterials,true,SK-Pharmacy,28
+MED-0007,Paracetamol 500 mg tablets,pack,Analgesics and antipyretics,true,SK-Pharmacy,49
+MED-0008,Ibuprofen 400 mg tablets,pack,Analgesics and antipyretics,true,SK-Pharmacy,35
+MED-0009,Ketorolac 30 mg/ml solution for injection,ampoule,Analgesics and antipyretics,true,SK-Pharmacy,49
+MED-0010,Tramadol 50 mg capsules,pack,Analgesics and antipyretics,true,Distributor A,21
+MED-0011,Metformin 850 mg tablets,pack,Antidiabetics,true,SK-Pharmacy,49
+MED-0012,Insulin glargine 100 IU/ml 3 ml,cartridge,Antidiabetics,true,SK-Pharmacy,49
+MED-0013,Enoxaparin sodium 40 mg/0.4 ml,syringe,Anticoagulants,true,SK-Pharmacy,28
+MED-0014,Heparin sodium 5000 IU/ml 5 ml,vial,Anticoagulants,true,SK-Pharmacy,56
+MED-0015,Sodium chloride 0.9% 500 ml,bottle,Infusion solutions,true,Distributor B,7
+MED-0016,Glucose 5% 500 ml,bottle,Infusion solutions,true,SK-Pharmacy,49
+MED-0017,Ringer's solution 500 ml,bottle,Infusion solutions,true,SK-Pharmacy,42
+MED-0018,Omeprazole 20 mg capsules,pack,Gastrointestinal,true,Distributor A,14
+MED-0019,Ondansetron 4 mg/2 ml solution for injection,ampoule,Gastrointestinal,true,SK-Pharmacy,49
+MED-0020,Metoclopramide 10 mg/2 ml solution for injection,ampoule,Gastrointestinal,true,Distributor B,7

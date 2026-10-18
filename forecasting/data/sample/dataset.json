@@ -1,0 +1,895 @@
+{
+  "dataset": "PharmaStock synthetic development dataset",
+  "generator": "forecasting/data/generate_synthetic.py",
+  "generator_version": "0.1.0",
+  "parameters": {
+    "items": 20,
+    "weeks": 104,
+    "seed": 42,
+    "end": "2026-10-12"
+  },
+  "period": {
+    "first_week": "2024-10-21",
+    "last_week": "2026-10-12",
+    "weeks": 104
+  },
+  "counts": {
+    "items": 20,
+    "consumption_rows": 2080,
+    "stock_rows": 2080,
+    "receipt_rows": 330,
+    "planned_receipt_rows": 18,
+    "stock_out_weeks": 78,
+    "items_with_stock_outs": 14,
+    "demand_classes": {
+      "smooth": 6,
+      "intermittent": 5,
+      "erratic": 3,
+      "lumpy": 6
+    }
+  },
+  "items": [
+    {
+      "code": "MED-0001",
+      "name": "Amoxicillin 500 mg capsules",
+      "unit": "pack",
+      "group": "Antibacterials",
+      "supplier": "SK-Pharmacy",
+      "lead_time_weeks": 6,
+      "demand_class": "smooth",
+      "mean_weekly_demand": 236.708,
+      "occurrence_probability": 0.944,
+      "size_sigma": 0.0,
+      "size_dispersion": 10.869,
+      "seasonal_peak_week": 4,
+      "seasonal_amplitude": 0.35,
+      "trend_slope": 0.0,
+      "safety_weeks": 3,
+      "order_cycle_weeks": 4,
+      "delivery_blocks": [],
+      "spike_weeks": [
+        "2026-03-16"
+      ],
+      "observed": {
+        "weeks": 104,
+        "nonzero_weeks": 101,
+        "zero_share": 0.029,
+        "adi": 1.03,
+        "cv2": 0.25,
+        "observed_class": "smooth",
+        "total_consumption": 26472,
+        "stock_out_weeks": 1,
+        "stock_out_episodes": [
+          {
+            "first_week": "2026-03-16",
+            "last_week": "2026-03-16",
+            "weeks": 1
+          }
+        ],
+        "censored_demand_units": 269
+      }
+    },
+    {
+      "code": "MED-0002",
+      "name": "Ceftriaxone 1 g powder for injection",
+      "unit": "vial",
+      "group": "Antibacterials",
+      "supplier": "Distributor A",
+      "lead_time_weeks": 3,
+      "demand_class": "intermittent",
+      "mean_weekly_demand": 1.051,
+      "occurrence_probability": 0.353,
+      "size_sigma": 0.0,
+      "size_dispersion": 0.0,
+      "seasonal_peak_week": 3,
+      "seasonal_amplitude": 0.3,
+      "trend_slope": 0.0,
+      "safety_weeks": 2,
+      "order_cycle_weeks": 3,
+      "delivery_blocks": [
+        {
+          "first_week": "2026-01-05",
+          "target_stock_out_weeks": 4
+        }
+      ],
+      "spike_weeks": [],
+      "observed": {
+        "weeks": 104,
+        "nonzero_weeks": 32,
+        "zero_share": 0.692,
+        "adi": 3.25,
+        "cv2": 0.186,
+        "observed_class": "intermittent",
+        "total_consumption": 96,
+        "stock_out_weeks": 5,
+        "stock_out_episodes": [
+          {
+            "first_week": "2024-12-09",
+            "last_week": "2024-12-09",
+            "weeks": 1
+          },
+          {
+            "first_week": "2026-01-05",
+            "last_week": "2026-01-26",
+            "weeks": 4
+          }
+        ],
+        "censored_demand_units": 5
+      }
+    },
+    {
+      "code": "MED-0003",
+      "name": "Azithromycin 500 mg tablets",
+      "unit": "pack",
+      "group": "Antibacterials",
+      "supplier": "Distributor A",
+      "lead_time_weeks": 3,
+      "demand_class": "erratic",
+      "mean_weekly_demand": 66.85,
+      "occurrence_probability": 0.964,
+      "size_sigma": 0.806,
+      "size_dispersion": 0.0,
+      "seasonal_peak_week": 5,
+      "seasonal_amplitude": 0.4,
+      "trend_slope": 0.0,
+      "safety_weeks": 3,
+      "order_cycle_weeks": 4,
+      "delivery_blocks": [],
+      "spike_weeks": [
+        "2025-04-21"
+      ],
+      "observed": {
+        "weeks": 104,
+        "nonzero_weeks": 100,
+        "zero_share": 0.038,
+        "adi": 1.04,
+        "cv2": 1.205,
+        "observed_class": "erratic",
+        "total_consumption": 7208,
+        "stock_out_weeks": 3,
+        "stock_out_episodes": [
+          {
+            "first_week": "2025-11-10",
+            "last_week": "2025-11-17",
+            "weeks": 2
+          },
+          {
+            "first_week": "2025-12-29",
+            "last_week": "2025-12-29",
+            "weeks": 1
+          }
+        ],
+        "censored_demand_units": 238
+      }
+    },
+    {
+      "code": "MED-0004",
+      "name": "Ciprofloxacin 500 mg tablets",
+      "unit": "pack",
+      "group": "Antibacterials",
+      "supplier": "SK-Pharmacy",
+      "lead_time_weeks": 8,
+      "demand_class": "lumpy",
+      "mean_weekly_demand": 9.341,
+      "occurrence_probability": 0.219,
+      "size_sigma": 1.098,
+      "size_dispersion": 0.0,
+      "seasonal_peak_week": null,
+      "seasonal_amplitude": 0.0,
+      "trend_slope": 0.0,
+      "safety_weeks": 2,
+      "order_cycle_weeks": 2,
+      "delivery_blocks": [
+        {
+          "first_week": "2025-11-17",
+          "target_stock_out_weeks": 1
+        }
+      ],
+      "spike_weeks": [],
+      "observed": {
+        "weeks": 104,
+        "nonzero_weeks": 22,
+        "zero_share": 0.788,
+        "adi": 4.727,
+        "cv2": 1.084,
+        "observed_class": "lumpy",
+        "total_consumption": 751,
+        "stock_out_weeks": 15,
+        "stock_out_episodes": [
+          {
+            "first_week": "2024-12-16",
+            "last_week": "2025-01-27",
+            "weeks": 7
+          },
+          {
+            "first_week": "2026-05-18",
+            "last_week": "2026-06-22",
+            "weeks": 6
+          },
+          {
+            "first_week": "2026-09-07",
+            "last_week": "2026-09-14",
+            "weeks": 2
+          }
+        ],
+        "censored_demand_units": 142
+      }
+    },
+    {
+      "code": "MED-0005",
+      "name": "Meropenem 1 g powder for injection",
+      "unit": "vial",
+      "group": "Antibacterials",
+      "supplier": "SK-Pharmacy",
+      "lead_time_weeks": 7,
+      "demand_class": "smooth",
+      "mean_weekly_demand": 207.548,
+      "occurrence_probability": 0.944,
+      "size_sigma": 0.0,
+      "size_dispersion": 10.661,
+      "seasonal_peak_week": null,
+      "seasonal_amplitude": 0.0,
+      "trend_slope": 0.0,
+      "safety_weeks": 3,
+      "order_cycle_weeks": 3,
+      "delivery_blocks": [
+        {
+          "first_week": "2025-07-14",
+          "target_stock_out_weeks": 3
+        },
+        {
+          "first_week": "2026-07-13",
+          "target_stock_out_weeks": 2
+        }
+      ],
+      "spike_weeks": [
+        "2026-04-27"
+      ],
+      "observed": {
+        "weeks": 104,
+        "nonzero_weeks": 95,
+        "zero_share": 0.087,
+        "adi": 1.095,
+        "cv2": 0.249,
+        "observed_class": "smooth",
+        "total_consumption": 20966,
+        "stock_out_weeks": 6,
+        "stock_out_episodes": [
+          {
+            "first_week": "2025-08-25",
+            "last_week": "2025-09-08",
+            "weeks": 3
+          },
+          {
+            "first_week": "2026-04-27",
+            "last_week": "2026-04-27",
+            "weeks": 1
+          },
+          {
+            "first_week": "2026-08-24",
+            "last_week": "2026-08-31",
+            "weeks": 2
+          }
+        ],
+        "censored_demand_units": 808
+      }
+    },
+    {
+      "code": "MED-0006",
+      "name": "Vancomycin 1 g powder for injection",
+      "unit": "vial",
+      "group": "Antibacterials",
+      "supplier": "SK-Pharmacy",
+      "lead_time_weeks": 4,
+      "demand_class": "smooth",
+      "mean_weekly_demand": 240.339,
+      "occurrence_probability": 0.966,
+      "size_sigma": 0.0,
+      "size_dispersion": 9.641,
+      "seasonal_peak_week": null,
+      "seasonal_amplitude": 0.0,
+      "trend_slope": 0.0,
+      "safety_weeks": 2,
+      "order_cycle_weeks": 3,
+      "delivery_blocks": [
+        {
+          "first_week": "2025-05-05",
+          "target_stock_out_weeks": 2
+        }
+      ],
+      "spike_weeks": [],
+      "observed": {
+        "weeks": 104,
+        "nonzero_weeks": 99,
+        "zero_share": 0.048,
+        "adi": 1.051,
+        "cv2": 0.161,
+        "observed_class": "smooth",
+        "total_consumption": 24645,
+        "stock_out_weeks": 2,
+        "stock_out_episodes": [
+          {
+            "first_week": "2025-06-16",
+            "last_week": "2025-06-23",
+            "weeks": 2
+          }
+        ],
+        "censored_demand_units": 680
+      }
+    },
+    {
+      "code": "MED-0007",
+      "name": "Paracetamol 500 mg tablets",
+      "unit": "pack",
+      "group": "Analgesics and antipyretics",
+      "supplier": "SK-Pharmacy",
+      "lead_time_weeks": 7,
+      "demand_class": "intermittent",
+      "mean_weekly_demand": 2.099,
+      "occurrence_probability": 0.494,
+      "size_sigma": 0.0,
+      "size_dispersion": 0.0,
+      "seasonal_peak_week": 3,
+      "seasonal_amplitude": 0.3,
+      "trend_slope": 0.0,
+      "safety_weeks": 3,
+      "order_cycle_weeks": 2,
+      "delivery_blocks": [
+        {
+          "first_week": "2025-11-03",
+          "target_stock_out_weeks": 4
+        }
+      ],
+      "spike_weeks": [],
+      "observed": {
+        "weeks": 104,
+        "nonzero_weeks": 57,
+        "zero_share": 0.452,
+        "adi": 1.825,
+        "cv2": 0.235,
+        "observed_class": "intermittent",
+        "total_consumption": 234,
+        "stock_out_weeks": 4,
+        "stock_out_episodes": [
+          {
+            "first_week": "2025-12-15",
+            "last_week": "2026-01-05",
+            "weeks": 4
+          }
+        ],
+        "censored_demand_units": 4
+      }
+    },
+    {
+      "code": "MED-0008",
+      "name": "Ibuprofen 400 mg tablets",
+      "unit": "pack",
+      "group": "Analgesics and antipyretics",
+      "supplier": "SK-Pharmacy",
+      "lead_time_weeks": 5,
+      "demand_class": "lumpy",
+      "mean_weekly_demand": 2.095,
+      "occurrence_probability": 0.255,
+      "size_sigma": 0.913,
+      "size_dispersion": 0.0,
+      "seasonal_peak_week": 4,
+      "seasonal_amplitude": 0.2,
+      "trend_slope": 0.163,
+      "safety_weeks": 2,
+      "order_cycle_weeks": 4,
+      "delivery_blocks": [],
+      "spike_weeks": [],
+      "observed": {
+        "weeks": 104,
+        "nonzero_weeks": 27,
+        "zero_share": 0.74,
+        "adi": 3.852,
+        "cv2": 0.55,
+        "observed_class": "lumpy",
+        "total_consumption": 154,
+        "stock_out_weeks": 18,
+        "stock_out_episodes": [
+          {
+            "first_week": "2025-10-13",
+            "last_week": "2025-10-20",
+            "weeks": 2
+          },
+          {
+            "first_week": "2025-11-10",
+            "last_week": "2025-11-10",
+            "weeks": 1
+          },
+          {
+            "first_week": "2026-01-19",
+            "last_week": "2026-02-09",
+            "weeks": 4
+          },
+          {
+            "first_week": "2026-03-09",
+            "last_week": "2026-04-06",
+            "weeks": 5
+          },
+          {
+            "first_week": "2026-06-29",
+            "last_week": "2026-07-13",
+            "weeks": 3
+          },
+          {
+            "first_week": "2026-09-28",
+            "last_week": "2026-10-12",
+            "weeks": 3
+          }
+        ],
+        "censored_demand_units": 120
+      }
+    },
+    {
+      "code": "MED-0009",
+      "name": "Ketorolac 30 mg/ml solution for injection",
+      "unit": "ampoule",
+      "group": "Analgesics and antipyretics",
+      "supplier": "SK-Pharmacy",
+      "lead_time_weeks": 7,
+      "demand_class": "lumpy",
+      "mean_weekly_demand": 1.407,
+      "occurrence_probability": 0.225,
+      "size_sigma": 0.836,
+      "size_dispersion": 0.0,
+      "seasonal_peak_week": null,
+      "seasonal_amplitude": 0.0,
+      "trend_slope": 0.0,
+      "safety_weeks": 1,
+      "order_cycle_weeks": 4,
+      "delivery_blocks": [
+        {
+          "first_week": "2025-12-01",
+          "target_stock_out_weeks": 3
+        }
+      ],
+      "spike_weeks": [],
+      "observed": {
+        "weeks": 104,
+        "nonzero_weeks": 16,
+        "zero_share": 0.846,
+        "adi": 6.5,
+        "cv2": 0.463,
+        "observed_class": "intermittent",
+        "total_consumption": 136,
+        "stock_out_weeks": 8,
+        "stock_out_episodes": [
+          {
+            "first_week": "2025-12-22",
+            "last_week": "2026-01-19",
+            "weeks": 5
+          },
+          {
+            "first_week": "2026-08-31",
+            "last_week": "2026-09-14",
+            "weeks": 3
+          }
+        ],
+        "censored_demand_units": 39
+      }
+    },
+    {
+      "code": "MED-0010",
+      "name": "Tramadol 50 mg capsules",
+      "unit": "pack",
+      "group": "Analgesics and antipyretics",
+      "supplier": "Distributor A",
+      "lead_time_weeks": 3,
+      "demand_class": "intermittent",
+      "mean_weekly_demand": 1.273,
+      "occurrence_probability": 0.434,
+      "size_sigma": 0.0,
+      "size_dispersion": 0.0,
+      "seasonal_peak_week": null,
+      "seasonal_amplitude": 0.0,
+      "trend_slope": -0.217,
+      "safety_weeks": 2,
+      "order_cycle_weeks": 4,
+      "delivery_blocks": [
+        {
+          "first_week": "2026-08-17",
+          "target_stock_out_weeks": 2
+        }
+      ],
+      "spike_weeks": [],
+      "observed": {
+        "weeks": 104,
+        "nonzero_weeks": 37,
+        "zero_share": 0.644,
+        "adi": 2.811,
+        "cv2": 0.2,
+        "observed_class": "intermittent",
+        "total_consumption": 98,
+        "stock_out_weeks": 0,
+        "stock_out_episodes": [],
+        "censored_demand_units": 0
+      }
+    },
+    {
+      "code": "MED-0011",
+      "name": "Metformin 850 mg tablets",
+      "unit": "pack",
+      "group": "Antidiabetics",
+      "supplier": "SK-Pharmacy",
+      "lead_time_weeks": 7,
+      "demand_class": "smooth",
+      "mean_weekly_demand": 46.989,
+      "occurrence_probability": 0.99,
+      "size_sigma": 0.0,
+      "size_dispersion": 7.646,
+      "seasonal_peak_week": null,
+      "seasonal_amplitude": 0.0,
+      "trend_slope": -0.086,
+      "safety_weeks": 2,
+      "order_cycle_weeks": 2,
+      "delivery_blocks": [],
+      "spike_weeks": [],
+      "observed": {
+        "weeks": 104,
+        "nonzero_weeks": 103,
+        "zero_share": 0.01,
+        "adi": 1.01,
+        "cv2": 0.165,
+        "observed_class": "smooth",
+        "total_consumption": 4639,
+        "stock_out_weeks": 0,
+        "stock_out_episodes": [],
+        "censored_demand_units": 0
+      }
+    },
+    {
+      "code": "MED-0012",
+      "name": "Insulin glargine 100 IU/ml 3 ml",
+      "unit": "cartridge",
+      "group": "Antidiabetics",
+      "supplier": "SK-Pharmacy",
+      "lead_time_weeks": 7,
+      "demand_class": "erratic",
+      "mean_weekly_demand": 48.888,
+      "occurrence_probability": 0.944,
+      "size_sigma": 0.875,
+      "size_dispersion": 0.0,
+      "seasonal_peak_week": null,
+      "seasonal_amplitude": 0.0,
+      "trend_slope": 0.0,
+      "safety_weeks": 2,
+      "order_cycle_weeks": 4,
+      "delivery_blocks": [],
+      "spike_weeks": [],
+      "observed": {
+        "weeks": 104,
+        "nonzero_weeks": 97,
+        "zero_share": 0.067,
+        "adi": 1.072,
+        "cv2": 1.447,
+        "observed_class": "erratic",
+        "total_consumption": 4869,
+        "stock_out_weeks": 5,
+        "stock_out_episodes": [
+          {
+            "first_week": "2025-06-30",
+            "last_week": "2025-07-28",
+            "weeks": 5
+          }
+        ],
+        "censored_demand_units": 191
+      }
+    },
+    {
+      "code": "MED-0013",
+      "name": "Enoxaparin sodium 40 mg/0.4 ml",
+      "unit": "syringe",
+      "group": "Anticoagulants",
+      "supplier": "SK-Pharmacy",
+      "lead_time_weeks": 4,
+      "demand_class": "smooth",
+      "mean_weekly_demand": 48.953,
+      "occurrence_probability": 0.959,
+      "size_sigma": 0.0,
+      "size_dispersion": 5.365,
+      "seasonal_peak_week": null,
+      "seasonal_amplitude": 0.0,
+      "trend_slope": 0.0,
+      "safety_weeks": 2,
+      "order_cycle_weeks": 3,
+      "delivery_blocks": [],
+      "spike_weeks": [
+        "2025-03-24"
+      ],
+      "observed": {
+        "weeks": 104,
+        "nonzero_weeks": 102,
+        "zero_share": 0.019,
+        "adi": 1.02,
+        "cv2": 0.319,
+        "observed_class": "smooth",
+        "total_consumption": 4919,
+        "stock_out_weeks": 0,
+        "stock_out_episodes": [],
+        "censored_demand_units": 0
+      }
+    },
+    {
+      "code": "MED-0014",
+      "name": "Heparin sodium 5000 IU/ml 5 ml",
+      "unit": "vial",
+      "group": "Anticoagulants",
+      "supplier": "SK-Pharmacy",
+      "lead_time_weeks": 8,
+      "demand_class": "intermittent",
+      "mean_weekly_demand": 0.802,
+      "occurrence_probability": 0.502,
+      "size_sigma": 0.0,
+      "size_dispersion": 0.0,
+      "seasonal_peak_week": null,
+      "seasonal_amplitude": 0.0,
+      "trend_slope": 0.0,
+      "safety_weeks": 2,
+      "order_cycle_weeks": 4,
+      "delivery_blocks": [],
+      "spike_weeks": [],
+      "observed": {
+        "weeks": 104,
+        "nonzero_weeks": 53,
+        "zero_share": 0.49,
+        "adi": 1.962,
+        "cv2": 0.232,
+        "observed_class": "intermittent",
+        "total_consumption": 95,
+        "stock_out_weeks": 0,
+        "stock_out_episodes": [],
+        "censored_demand_units": 0
+      }
+    },
+    {
+      "code": "MED-0015",
+      "name": "Sodium chloride 0.9% 500 ml",
+      "unit": "bottle",
+      "group": "Infusion solutions",
+      "supplier": "Distributor B",
+      "lead_time_weeks": 1,
+      "demand_class": "smooth",
+      "mean_weekly_demand": 112.839,
+      "occurrence_probability": 0.952,
+      "size_sigma": 0.0,
+      "size_dispersion": 7.511,
+      "seasonal_peak_week": null,
+      "seasonal_amplitude": 0.0,
+      "trend_slope": 0.278,
+      "safety_weeks": 1,
+      "order_cycle_weeks": 3,
+      "delivery_blocks": [
+        {
+          "first_week": "2025-08-04",
+          "target_stock_out_weeks": 1
+        },
+        {
+          "first_week": "2026-03-09",
+          "target_stock_out_weeks": 1
+        }
+      ],
+      "spike_weeks": [],
+      "observed": {
+        "weeks": 104,
+        "nonzero_weeks": 99,
+        "zero_share": 0.048,
+        "adi": 1.051,
+        "cv2": 0.137,
+        "observed_class": "smooth",
+        "total_consumption": 13232,
+        "stock_out_weeks": 2,
+        "stock_out_episodes": [
+          {
+            "first_week": "2025-09-01",
+            "last_week": "2025-09-01",
+            "weeks": 1
+          },
+          {
+            "first_week": "2026-04-13",
+            "last_week": "2026-04-13",
+            "weeks": 1
+          }
+        ],
+        "censored_demand_units": 198
+      }
+    },
+    {
+      "code": "MED-0016",
+      "name": "Glucose 5% 500 ml",
+      "unit": "bottle",
+      "group": "Infusion solutions",
+      "supplier": "SK-Pharmacy",
+      "lead_time_weeks": 7,
+      "demand_class": "lumpy",
+      "mean_weekly_demand": 10.992,
+      "occurrence_probability": 0.198,
+      "size_sigma": 0.892,
+      "size_dispersion": 0.0,
+      "seasonal_peak_week": null,
+      "seasonal_amplitude": 0.0,
+      "trend_slope": 0.088,
+      "safety_weeks": 1,
+      "order_cycle_weeks": 4,
+      "delivery_blocks": [],
+      "spike_weeks": [],
+      "observed": {
+        "weeks": 104,
+        "nonzero_weeks": 16,
+        "zero_share": 0.846,
+        "adi": 6.5,
+        "cv2": 0.775,
+        "observed_class": "lumpy",
+        "total_consumption": 1275,
+        "stock_out_weeks": 4,
+        "stock_out_episodes": [
+          {
+            "first_week": "2025-03-10",
+            "last_week": "2025-03-31",
+            "weeks": 4
+          }
+        ],
+        "censored_demand_units": 66
+      }
+    },
+    {
+      "code": "MED-0017",
+      "name": "Ringer's solution 500 ml",
+      "unit": "bottle",
+      "group": "Infusion solutions",
+      "supplier": "SK-Pharmacy",
+      "lead_time_weeks": 6,
+      "demand_class": "lumpy",
+      "mean_weekly_demand": 9.362,
+      "occurrence_probability": 0.281,
+      "size_sigma": 0.902,
+      "size_dispersion": 0.0,
+      "seasonal_peak_week": null,
+      "seasonal_amplitude": 0.0,
+      "trend_slope": 0.0,
+      "safety_weeks": 1,
+      "order_cycle_weeks": 2,
+      "delivery_blocks": [],
+      "spike_weeks": [],
+      "observed": {
+        "weeks": 104,
+        "nonzero_weeks": 26,
+        "zero_share": 0.75,
+        "adi": 4.0,
+        "cv2": 0.837,
+        "observed_class": "lumpy",
+        "total_consumption": 750,
+        "stock_out_weeks": 0,
+        "stock_out_episodes": [],
+        "censored_demand_units": 0
+      }
+    },
+    {
+      "code": "MED-0018",
+      "name": "Omeprazole 20 mg capsules",
+      "unit": "pack",
+      "group": "Gastrointestinal",
+      "supplier": "Distributor A",
+      "lead_time_weeks": 2,
+      "demand_class": "erratic",
+      "mean_weekly_demand": 90.171,
+      "occurrence_probability": 0.984,
+      "size_sigma": 0.856,
+      "size_dispersion": 0.0,
+      "seasonal_peak_week": null,
+      "seasonal_amplitude": 0.0,
+      "trend_slope": 0.24,
+      "safety_weeks": 2,
+      "order_cycle_weeks": 4,
+      "delivery_blocks": [],
+      "spike_weeks": [
+        "2025-02-17"
+      ],
+      "observed": {
+        "weeks": 104,
+        "nonzero_weeks": 101,
+        "zero_share": 0.029,
+        "adi": 1.03,
+        "cv2": 0.995,
+        "observed_class": "erratic",
+        "total_consumption": 10881,
+        "stock_out_weeks": 3,
+        "stock_out_episodes": [
+          {
+            "first_week": "2025-10-27",
+            "last_week": "2025-10-27",
+            "weeks": 1
+          },
+          {
+            "first_week": "2026-05-11",
+            "last_week": "2026-05-11",
+            "weeks": 1
+          },
+          {
+            "first_week": "2026-06-29",
+            "last_week": "2026-06-29",
+            "weeks": 1
+          }
+        ],
+        "censored_demand_units": 288
+      }
+    },
+    {
+      "code": "MED-0019",
+      "name": "Ondansetron 4 mg/2 ml solution for injection",
+      "unit": "ampoule",
+      "group": "Gastrointestinal",
+      "supplier": "SK-Pharmacy",
+      "lead_time_weeks": 7,
+      "demand_class": "lumpy",
+      "mean_weekly_demand": 3.037,
+      "occurrence_probability": 0.258,
+      "size_sigma": 1.132,
+      "size_dispersion": 0.0,
+      "seasonal_peak_week": null,
+      "seasonal_amplitude": 0.0,
+      "trend_slope": -0.175,
+      "safety_weeks": 3,
+      "order_cycle_weeks": 2,
+      "delivery_blocks": [
+        {
+          "first_week": "2026-08-31",
+          "target_stock_out_weeks": 4
+        }
+      ],
+      "spike_weeks": [],
+      "observed": {
+        "weeks": 104,
+        "nonzero_weeks": 21,
+        "zero_share": 0.798,
+        "adi": 4.952,
+        "cv2": 0.818,
+        "observed_class": "lumpy",
+        "total_consumption": 194,
+        "stock_out_weeks": 2,
+        "stock_out_episodes": [
+          {
+            "first_week": "2025-08-25",
+            "last_week": "2025-09-01",
+            "weeks": 2
+          }
+        ],
+        "censored_demand_units": 2
+      }
+    },
+    {
+      "code": "MED-0020",
+      "name": "Metoclopramide 10 mg/2 ml solution for injection",
+      "unit": "ampoule",
+      "group": "Gastrointestinal",
+      "supplier": "Distributor B",
+      "lead_time_weeks": 1,
+      "demand_class": "intermittent",
+      "mean_weekly_demand": 0.272,
+      "occurrence_probability": 0.215,
+      "size_sigma": 0.0,
+      "size_dispersion": 0.0,
+      "seasonal_peak_week": null,
+      "seasonal_amplitude": 0.0,
+      "trend_slope": -0.208,
+      "safety_weeks": 1,
+      "order_cycle_weeks": 3,
+      "delivery_blocks": [],
+      "spike_weeks": [],
+      "observed": {
+        "weeks": 104,
+        "nonzero_weeks": 22,
+        "zero_share": 0.788,
+        "adi": 4.727,
+        "cv2": 0.249,
+        "observed_class": "intermittent",
+        "total_consumption": 27,
+        "stock_out_weeks": 0,
+        "stock_out_episodes": [],
+        "censored_demand_units": 0
+      }
+    }
+  ]
+}
