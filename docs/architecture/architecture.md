@@ -1,6 +1,6 @@
 # PharmaStock — Architecture description
 
-Task: PHA2-12 · Primary author: Abzal Bakhytov · Status: draft · Last updated: 2026-10-17
+Task: PHA2-12 · Primary author: Abzal Bakhytov · Status: draft for review · Last updated: 2026-10-18
 
 This document describes the architecture of PharmaStock, the prototype developed in the
 diploma project "Development of smart supply chain analytics system for forecasting
@@ -10,7 +10,7 @@ architecture documents:
 
 | Document | Content | State |
 |---|---|---|
-| `docs/architecture/architecture.md` (this file) | Goals, context, high-level overview, components, flows, deployment, decisions | Draft |
+| `docs/architecture/architecture.md` (this file) | Goals, context, high-level overview, components, flows, deployment, decisions, requirement alignment | Draft for review |
 | `docs/architecture/api-contract.md` | REST API v1 endpoints, request/response schemas | In progress |
 | `docs/architecture/database-schema.md` | Tables, keys, constraints, migrations | In progress |
 | `docs/requirements.md` | Functional (FR) and non-functional (NFR) requirements | In progress |
@@ -21,7 +21,8 @@ Task tracking: [Linear project PharmaStock](https://linear.app/pharmacy-kz/proje
 
 Contents: 1 Architectural goals · 2 System context · 3 High-level overview ·
 4 Component view · 5 Key flows · 6 Technology mapping · 7 Deployment view ·
-8 Cross-cutting concerns · 9 Next steps.
+8 Cross-cutting concerns · 9 Architectural decisions · 10 Alignment with requirements ·
+11 Next steps.
 
 ## 1. Architectural goals
 
@@ -295,8 +296,8 @@ stock and the level boundaries from `threshold_config`. The projected series is 
 | Web interface | Vue 3, Vite, TypeScript, Vue Router, Pinia, Chart.js | Built to static files; Vitest for unit tests (later) |
 | Backend API | Python 3.12, FastAPI, Pydantic v2, uvicorn | OpenAPI schema generated; request validation at the boundary |
 | Persistence | SQLAlchemy 2.x, Alembic, PostgreSQL 16 | JSONB columns for `summary_json`, `config_json`, `projected_stock_json`, `details_json`, `value_json` |
-| Background jobs | In-process worker in the backend | Mechanism to be confirmed during backend implementation (see next steps) |
-| Forecasting | pandas, numpy, scikit-learn, statsforecast, LightGBM | Installed into the backend environment as the `forecasting` package |
+| Background jobs | In-process worker in the backend | See ADR-5; mechanism to be confirmed against NFR-01 during backend implementation |
+| Forecasting | pandas, numpy, scikit-learn, statsforecast, LightGBM | Installed into the backend environment as the `forecasting` package (ADR-1) |
 | Tests | pytest (backend, forecasting), Vitest (frontend, later) | Run in CI on every pull request (NFR-08) |
 | Infrastructure | Docker Compose (PostgreSQL), GitHub Actions CI | `docker-compose.yml`, `.github/workflows/ci.yml` |
 | Documentation | Markdown, Mermaid | Sources in `docs/diagrams/src/*.mmd`, exports in `docs/diagrams/export/*.svg` |
@@ -389,13 +390,179 @@ the content of time series (negative quantities, duplicate periods, non-Monday
 `period_start`, gaps, stock-out consistency). The rules are shared where possible so that
 an import that passed validation can always be forecast.
 
-## 9. Next steps for this document
+## 9. Architectural decisions
 
-- Architectural decisions (ADR-style entries: in-process forecasting package, PostgreSQL,
-  REST/JSON, weekly granularity stored as `period_start`, background forecast runs) —
-  planned.
-- Alignment of components with the requirement IDs (FR-01 … FR-18, NFR-01 … NFR-10) —
-  planned.
-- Confirm the background job mechanism against NFR-01 with the first models (Nov 2026).
+Decisions are recorded in a short ADR style. Status is `Accepted` (the team builds on it)
+or `Proposed` (to be confirmed by a measurement or a later task). A decision is changed
+only by a new entry that supersedes it.
+
+### ADR-1 Forecasting as an in-process Python package, not a separate service
+
+- Status: Accepted (2026-10-18).
+- Context: the forecasting module is developed by Evelina as the `forecasting/` package
+  and the backend by Abzal. The backend must execute forecasts for up to 1,000 items
+  within 5 minutes (NFR-01) and every run must be reproducible (NFR-05). Options
+  considered: (a) a separate forecasting service with an HTTP API, (b) a task queue with
+  dedicated worker processes, (c) a plain Python package imported by the backend.
+- Decision: option (c). The backend installs `forecasting` into its own environment and
+  the background job runner calls `forecasting.api.forecast_items(history, horizon,
+  config) -> ForecastResult` directly. The package has no database or HTTP code; the
+  backend converts between database rows and the history table.
+- Consequences: one deployable service and one Python environment, no network
+  serialisation of time series, the same code runs in experiments and in the application,
+  and unit tests of the forecasting package need no backend. The backend image carries
+  the ML dependencies (pandas, numpy, scikit-learn, statsforecast, LightGBM) and
+  CPU-heavy runs share the process with the API, which ADR-5 addresses by running them in
+  the background with limited concurrency. Because the integration point is a single
+  function with plain data structures, a separate service remains possible later without
+  changing the forecasting code.
+
+### ADR-2 PostgreSQL as the single data store
+
+- Status: Accepted (2026-10-18).
+- Context: the system stores a catalogue, weekly time series per item, forecasts with
+  intervals, risk assessments with a projected series, users, notifications, an audit log
+  and configuration (entities in `docs/architecture/database-schema.md`). Options
+  considered: SQLite, PostgreSQL, MySQL/MariaDB, a dedicated time-series database next to
+  a relational one.
+- Decision: PostgreSQL 16 as the only database, accessed through SQLAlchemy 2.x with
+  Alembic migrations. Semi-structured payloads (`summary_json`, `config_json`,
+  `projected_stock_json`, `details_json`, `value_json`) use JSONB columns.
+- Consequences: mature transactional storage with constraints that protect data quality
+  (unique `(item_id, period_start)` per batch, foreign keys), window functions for history
+  and projection queries, JSONB for flexible run configurations and summaries, and a
+  standard Docker image for local development and CI. Weekly data volumes (5,000 items ×
+  156 weeks ≈ 780,000 rows per series) do not need a time-series database. Tests that
+  touch the database run against a PostgreSQL service in CI rather than SQLite, so that
+  JSONB and constraint behaviour is identical.
+
+### ADR-3 REST/JSON API between the web interface and the backend
+
+- Status: Accepted (2026-10-18).
+- Context: the frontend (Birkhanym) and the backend (Abzal) are developed in parallel and
+  need a contract that can be agreed early and tested independently. Options considered:
+  REST with JSON, GraphQL, server-rendered pages.
+- Decision: a resource-oriented REST API under `/api/v1` with JSON payloads, documented
+  in `docs/architecture/api-contract.md` and served with the OpenAPI schema that FastAPI
+  produces; CSV for report downloads (`GET /api/v1/reports/risks.csv`); bearer-token
+  authentication. Long-running work is modelled as a resource (`forecast_run`) whose status
+  is polled.
+- Consequences: a small, well-understood surface that both pytest and the browser can
+  exercise; the frontend can be developed against the contract and mocked responses; the
+  OpenAPI schema can generate the typed client. There is no server push, so the Forecast
+  view polls `GET /api/v1/forecast-runs/{id}` while a run is in progress (acceptable for
+  runs lasting minutes). Purpose-built endpoints (`/items/{id}/history`,
+  `/items/{id}/forecast`, `/risks`) avoid over-fetching without a query language.
+
+### ADR-4 Weekly granularity stored as `period_start`
+
+- Status: Accepted (2026-10-18); the time step itself remains open for revision until the
+  requirements are frozen, as stated in the proposal.
+- Context: medicine consumption is intermittent and daily records are sparse and noisy;
+  procurement decisions are made on a weekly or longer cycle; the initial decision is a
+  weekly step with a 12-week horizon. The storage representation must make aggregation,
+  joins between consumption, stock, forecasts and risk projections, and validation
+  unambiguous.
+- Decision: every weekly table (`consumption_record`, `stock_snapshot`, `forecast`)
+  stores `period_start`, the Monday of the ISO week, as a `DATE` column that is part of a
+  uniqueness constraint with `item_id` (and the import batch where applicable). Receipts
+  and planned receipts keep their exact dates (`received_on`, `expected_on`) and are
+  aggregated to weeks when a projection is computed. Horizons are expressed in weeks
+  (`forecast_run.horizon_weeks`). Import files must provide `period_start` as the Monday of
+  the week in ISO format; other dates are rejected by validation.
+- Consequences: one convention shared by the import formats, the database, the API and
+  the forecasting package; weeks line up exactly across tables, which makes the risk
+  projection a simple cumulative calculation; the stock-out flag is defined per week. If
+  the time step is changed later, `period_start` keeps its meaning (start of the period)
+  and only the resampling rules and the horizon unit change. Weekly granularity cannot
+  express within-week stock-outs, which is accepted for the prototype.
+
+### ADR-5 Forecast runs execute in the background
+
+- Status: Proposed (2026-10-18); to be confirmed against NFR-01 with the first models in
+  November 2026.
+- Context: a forecast run over the whole catalogue can take minutes, which is far beyond
+  an acceptable HTTP request duration (NFR-02 requires typical pages within 2 seconds).
+  Runs must be observable, repeatable and must not corrupt data when they fail.
+- Decision: `POST /api/v1/forecast-runs` only creates a `forecast_run` row with status
+  `queued` and returns immediately; a background job runner inside the backend process
+  executes runs one at a time, updates `status` (`queued`, `running`, `completed`,
+  `failed`) with `started_at` and `finished_at`, and commits forecasts and risk assessments
+  only when the run has completed. Periodic runs (planned: weekly after the import) are
+  scheduled by the same runner. The initial implementation is a single worker thread with
+  an in-memory queue; an external task queue with separate worker processes is adopted only
+  if measurements show that NFR-01 cannot be met in-process.
+- Consequences: the API stays responsive during runs, the interface can show progress by
+  polling, and failed runs are visible in the audit log and in the Forecast view. A single
+  backend replica is assumed; the in-memory queue is lost on restart, `forecast_run` rows
+  still in status `queued` are re-queued on start-up, and a run that was `running` when
+  the process stopped is marked `failed`. Running the forecasting package inside the API
+  process limits isolation, which is the price of the simplicity of ADR-1 and of this
+  in-process runner for a three-person team.
+
+## 10. Alignment with requirements
+
+Requirement IDs and priorities are those of `docs/requirements.md`; the wording in the
+tables below is abbreviated.
+
+### 10.1 Components → functional requirements
+
+| Component | Covers | Notes |
+|---|---|---|
+| Imports view, `imports` router, ImportService | FR-01, FR-02, FR-10, FR-17, FR-18 | FR-10 via `planned_receipts.csv`; a dedicated planned-receipts endpoint is proposed for the API contract |
+| Items view, `items` router, CatalogueService | FR-03, FR-04, FR-05 | Suppliers and lead times maintained on the item page |
+| Forecast view, `forecast-runs` router, ForecastService, background job runner | FR-06, FR-07 | Horizon configurable per run; model information stored in `forecast_run.config_json` |
+| Forecasting package (validation, feature preparation, baselines, ML models, evaluation) | FR-06, FR-16, FR-17 | Baselines and metrics as listed in section 4.1; censored-demand handling in feature preparation |
+| Risks view, `risks` router, RiskService | FR-08, FR-09, FR-11, FR-13 | Thresholds owned by RiskService; CSV report served by the `risks` router |
+| Settings view, `config` router | FR-11, FR-14 | Threshold editing; user and role management for administrators |
+| `notifications` router, NotificationService | FR-12 | In-app only |
+| `auth` router, AuditService | FR-14, FR-15 | Audit entries for imports, forecast runs, configuration and user changes |
+| Dashboard view | FR-09, FR-12 | Summary of risk levels and unread notifications |
+| Repositories, PostgreSQL | all | Persistence of every entity |
+
+### 10.2 Functional requirements → components (coverage check)
+
+| ID | Requirement | Priority | Components | Status |
+|---|---|---|---|---|
+| FR-01 | Import consumption, stock and receipt data from CSV/XLSX files | Must | ImportService, `imports` router, Imports view | Designed |
+| FR-02 | Validate imported data and report errors: missing columns, negative quantities, unknown items, duplicate periods | Must | ImportService validation rules, Imports view | Designed |
+| FR-03 | Maintain the medicine catalogue: code, name, unit, group, active flag | Must | CatalogueService, `items` router, Items view | Designed |
+| FR-04 | Maintain suppliers and lead times per item | Should | CatalogueService, Items view | Designed; API endpoints to be added to the contract |
+| FR-05 | View current stock and consumption history per item as table and chart | Must | `items` router (`/history`), Items view (table and chart) | Designed |
+| FR-06 | Run a forecast for all or selected items for a configurable horizon | Must | `forecast-runs` router, ForecastService, job runner, forecasting package | Designed |
+| FR-07 | View the forecast per item together with history, point forecast, interval and model information | Must | `items` router (`/forecast`), Forecast view | Designed |
+| FR-08 | Calculate shortage risk per item from forecast, current stock, planned receipts and lead time | Must | RiskService | Designed |
+| FR-09 | Show a prioritised list of items at risk with risk level and expected stock-out date | Must | `risks` router, Risks view, Dashboard view | Designed |
+| FR-10 | Record planned deliveries (expected receipts) | Should | ImportService (`planned_receipts.csv`), `planned_receipt` entity | Designed; manual-entry endpoint proposed |
+| FR-11 | Configure risk thresholds and safety-stock parameters | Should | `config` router, RiskService, Settings view | Designed |
+| FR-12 | Generate in-app notifications for high-risk items | Should | NotificationService, `notifications` router, Dashboard view | Designed |
+| FR-13 | Export forecast and risk reports to CSV/XLSX | Should | `risks` router (`/reports/risks.csv`) | Designed for CSV; XLSX and forecast report planned |
+| FR-14 | Authenticate users and manage roles: administrator, pharmacist, viewer | Must | `auth` router, role dependencies, Settings view | Designed |
+| FR-15 | Keep an audit log of imports, forecast runs and configuration changes | Should | AuditService | Designed |
+| FR-16 | Compare forecasting models against baselines on a hold-out period and show MAE and WAPE | Should | Forecasting evaluation, `forecasting/experiments/`; presentation in the Forecast view | Designed; UI presentation to be detailed |
+| FR-17 | Flag stock-out periods so that zero consumption during a stock-out is treated as censored demand | Must | ImportService (`is_stock_out`), forecasting feature preparation | Designed |
+| FR-18 | Show a data-quality summary per import: coverage, gaps, outliers | Should | ImportService (`summary_json`), Imports view | Designed |
+
+### 10.3 Non-functional requirements → architectural mechanisms
+
+| ID | Requirement | Priority | Mechanism | Verification |
+|---|---|---|---|---|
+| NFR-01 | A forecast run for 1,000 items with 3 years of weekly history completes within 5 minutes on a 4 vCPU / 8 GB server | Should | In-process package (ADR-1), background run (ADR-5), vectorised baselines and global ML models | Timed run on the synthetic dataset (`docs/verification-and-evaluation-plan.md`) |
+| NFR-02 | Typical pages respond within 2 seconds with up to 5,000 items | Should | Purpose-built endpoints, indexes on `(item_id, period_start)`, pagination of lists | Response-time measurement in integration testing |
+| NFR-03 | Role-based access control; passwords stored hashed; HTTPS in deployment | Must | Section 8.1; reverse proxy for TLS | Backend tests for permissions; deployment checklist |
+| NFR-04 | No patient personal data is stored or processed | Must | Entity model contains no patient entities; import formats carry item-level data only | Review of schema and import formats |
+| NFR-05 | Forecast experiments are reproducible: fixed seeds, versioned configurations, saved results | Must | `forecast_run.config_json`, fixed seeds, versioned configurations in `forecasting/experiments/` | Re-run of a saved configuration yields identical results |
+| NFR-06 | The forecasting module rejects malformed input with a clear error instead of producing a wrong forecast | Must | `forecasting.data.validation`; typed exceptions surfaced as failed runs | Unit tests with malformed inputs |
+| NFR-07 | Deployable with Docker Compose on Linux with documented setup | Should | Section 7 | Fresh deployment following the documented setup |
+| NFR-08 | Automated tests for backend and forecasting run in CI on every pull request | Must | GitHub Actions workflow with pytest and frontend build | CI status on pull requests |
+| NFR-09 | UI works in current Chrome, Firefox and Edge on desktop, responsive down to 1280 px | Should | SPA with responsive layout | Manual check during user testing |
+| NFR-10 | Interface in English first; Russian localisation planned | Could | UI strings kept in message files from the start | Planned |
+
+## 11. Next steps for this document
+
+- Confirm ADR-5 (background run mechanism) with a timed run of the first models on the
+  synthetic dataset (November 2026).
+- Add the planned-receipts and supplier endpoints to `docs/architecture/api-contract.md`
+  (FR-04, FR-10) and reflect them in section 4.1.
 - Produce the SVG exports of both diagrams from the Mermaid sources and review the
   document with the team and the supervisor before the `pre-defense-1` tag.
