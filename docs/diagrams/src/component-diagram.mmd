@@ -1,0 +1,97 @@
+---
+title: PharmaStock component diagram (draft)
+---
+%% PHA2-12 | Component diagram for PharmaStock | Status: draft | Last updated: 2026-10-17
+%% Source of docs/diagrams/export/component-diagram.svg (export is produced from this file).
+%% Solid arrows: synchronous calls. Dotted arrows: manual file upload or entry by a user.
+flowchart TB
+    user(["Pharmacy user<br/>(browser)"])
+
+    subgraph ext ["External file sources (manual input, no automated integration)"]
+        mis["Hospital accounting / MIS exports<br/>consumption.csv, stock.csv, receipts.csv"]
+        skp["SK-Pharmacy delivery schedules<br/>planned_receipts.csv or manual entry"]
+    end
+
+    subgraph fe ["Frontend: Vue 3 SPA (frontend/)"]
+        subgraph views ["Views"]
+            vDash["Dashboard"]
+            vItems["Items"]
+            vForecast["Forecast"]
+            vRisks["Risks"]
+            vImports["Imports"]
+            vSettings["Settings"]
+        end
+        apiClient["API client<br/>typed HTTP client, Pinia stores"]
+    end
+
+    subgraph be ["Backend: FastAPI service (backend/)"]
+        subgraph routers ["API layer: routers under /api/v1"]
+            rAuth["auth"]
+            rItems["items"]
+            rImports["imports"]
+            rRuns["forecast-runs"]
+            rRisks["risks"]
+            rNotif["notifications"]
+            rConfig["config"]
+        end
+        subgraph services ["Services"]
+            sImport["ImportService"]
+            sCat["CatalogueService"]
+            sForecast["ForecastService"]
+            sRisk["RiskService"]
+            sNotif["NotificationService"]
+            sAudit["AuditService"]
+        end
+        repos["Repositories<br/>SQLAlchemy 2.x, Alembic migrations"]
+        jobs["Background job runner<br/>forecast runs, scheduled runs"]
+    end
+
+    subgraph fc ["Forecasting package: forecasting/ (in-process Python library)"]
+        fValid["Data validation<br/>schema, censored-demand flags"]
+        fFeat["Feature preparation<br/>resampling, lags, calendar features"]
+        fBase["Baselines<br/>naive, seasonal naive, moving average, Croston, SBA"]
+        fML["ML models<br/>LightGBM, statsforecast"]
+        fEval["Evaluation<br/>MAE, WAPE, bias, rolling-origin split"]
+    end
+
+    db[("PostgreSQL 16")]
+
+    user --> views
+    mis -. "upload" .-> vImports
+    skp -. "upload or entry" .-> vImports
+    views --> apiClient
+    apiClient -->|"HTTPS, JSON, bearer token"| routers
+
+    rAuth --> sAudit
+    rItems --> sCat
+    rImports --> sImport
+    rRuns --> sForecast
+    rRisks --> sRisk
+    rNotif --> sNotif
+    rConfig --> sRisk
+
+    sImport --> fValid
+    sImport --> sAudit
+    sForecast --> jobs
+    sForecast --> sAudit
+    sRisk --> sAudit
+
+    sImport --> repos
+    sCat --> repos
+    sForecast --> repos
+    sRisk --> repos
+    sNotif --> repos
+    sAudit --> repos
+
+    jobs -->|"forecast_items(history, horizon, config)"| fValid
+    jobs --> sRisk
+    sRisk --> sNotif
+    jobs --> repos
+
+    fValid --> fFeat
+    fFeat --> fBase
+    fFeat --> fML
+    fBase --> fEval
+    fML --> fEval
+
+    repos --> db
