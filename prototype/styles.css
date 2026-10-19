@@ -1,6 +1,6 @@
 /*
   PharmaStock prototype - shared stylesheet
-  PHA2-18 - Last updated: 2026-10-18
+  PHA2-18 - Last updated: 2026-10-19
 
   Static mockups of the key screens. Plain CSS, no framework, no build step.
   Colours and spacing are defined once as custom properties on :root so that
@@ -813,6 +813,262 @@ code,
   border-color: #f0d28a;
   background: #fff8e6;
   color: var(--risk-medium-text);
+}
+
+/* ---------- page header extras ---------- */
+.breadcrumb {
+  margin: 0 0 4px;
+  font-size: 0.86rem;
+  color: var(--color-text-secondary);
+}
+
+.topbar h1 .badge {
+  vertical-align: middle;
+  margin-left: 8px;
+  font-size: 0.78rem;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  min-width: 0;
+}
+
+/* ---------- filters and form controls ---------- */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 16px;
+  padding: 14px 18px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.field.grow {
+  flex: 1 1 240px;
+}
+
+.field-actions {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.field-check {
+  padding-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.field-check label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary);
+}
+
+.input,
+.select,
+.textarea {
+  font: inherit;
+  font-size: 0.92rem;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  min-width: 160px;
+}
+
+.textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  outline: 2px solid var(--color-primary-soft);
+  border-color: var(--color-primary);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 20px;
+  max-width: 860px;
+}
+
+.form-grid .span-2 {
+  grid-column: span 2;
+}
+
+.form-grid .input,
+.form-grid .select,
+.form-grid .textarea {
+  width: 100%;
+}
+
+.help {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+/* chips (filter by level) */
+.chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.86rem;
+  font-weight: 500;
+}
+
+.chip:hover {
+  background: var(--color-surface-muted);
+  text-decoration: none;
+}
+
+.chip.is-active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-primary-contrast);
+}
+
+.chip-count {
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.chip.is-active .chip-count {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.chip-high::before,
+.chip-medium::before,
+.chip-low::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.chip-high::before {
+  background: var(--risk-high);
+}
+
+.chip-medium::before {
+  background: var(--risk-medium);
+}
+
+.chip-low::before {
+  background: var(--risk-low);
+}
+
+/* ---------- table extras ---------- */
+.table-compact th,
+.table-compact td {
+  padding: 6px 12px;
+  font-size: 0.88rem;
+}
+
+.table-caption {
+  caption-side: top;
+  text-align: left;
+  padding: 10px 18px 6px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.table tr.is-flagged td {
+  background: #fff8f3;
+}
+
+.table .cell-sub {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.table .actions {
+  text-align: right;
+}
+
+.table-risks th,
+.table-risks td {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.table-risks td:first-child {
+  min-width: 200px;
+}
+
+.table-risks th {
+  white-space: normal;
+}
+
+.table-risks .actions .btn {
+  display: flex;
+  width: max-content;
+  margin-left: auto;
+}
+
+.table-risks .actions .btn + .btn {
+  margin-top: 4px;
+}
+
+.card-header .btn-row,
+.card-header .btn {
+  flex-shrink: 0;
+}
+
+.tag-high {
+  border-color: var(--risk-high);
+  color: var(--risk-high-text);
+  background: var(--risk-high-bg);
+}
+
+/* ---------- chart extras ---------- */
+.legend-swatch.is-hatch {
+  width: 22px;
+  height: 12px;
+  border: 1px solid var(--color-border-strong);
+  background: repeating-linear-gradient(45deg, #c9ced6 0 2px, transparent 2px 6px);
+}
+
+/* card that is the target of an in-page link (e.g. "Record delivery") */
+.target-card:target {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
 }
 
 /* ---------- responsive (NFR-09: desktop, down to 1280 px) ---------- */
