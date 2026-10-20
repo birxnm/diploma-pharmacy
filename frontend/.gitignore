@@ -1,0 +1,12 @@
+# PHA2-23 - Last updated: 2026-10-20
+# Build and tool output of the frontend. The repository root .gitignore already
+# ignores node_modules/, dist/, *.local, *.tsbuildinfo, logs and editor files;
+# the rules are repeated here so that the folder also works on its own.
+node_modules/
+dist/
+dist-ssr/
+coverage/
+.vite/
+*.tsbuildinfo
+*.local
+npm-debug.log*
