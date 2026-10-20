@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<!--
+  PharmaStock prototype - Settings
+  PHA2-18 - Last updated: 2026-10-20
+  Static mockup. All numbers, dates, names and e-mail addresses are
+  illustrative sample values (same scenario on every screen); the users are
+  fictional and the example domain is not a real organization.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Settings - PharmaStock prototype</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">P</span>
+      <span class="brand-name">PharmaStock</span>
+      <span class="brand-tag">mockup</span>
+    </div>
+    <nav class="nav" aria-label="Main navigation">
+      <a class="nav-link" href="index.html">Dashboard</a>
+      <a class="nav-link" href="risks.html">Risks <span class="count">4</span></a>
+      <a class="nav-link" href="items.html">Catalogue</a>
+      <a class="nav-link" href="item.html">Item page</a>
+      <a class="nav-link" href="forecast.html">Forecast runs</a>
+      <a class="nav-link" href="imports.html">Imports</a>
+      <div class="nav-section">Administration</div>
+      <a class="nav-link is-active" href="settings.html" aria-current="page">Settings</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user">
+        <span class="avatar" aria-hidden="true">HP</span>
+        <div>
+          <div class="user-name">Head of pharmacy</div>
+          <div>role: pharmacist</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="content">
+
+    <header class="topbar">
+      <div>
+        <h1>Settings</h1>
+        <p class="subtitle">Thresholds and safety stock &middot; suppliers and lead times &middot; users and roles &middot; audit log</p>
+      </div>
+      <div class="topbar-actions">
+        <nav class="chips" aria-label="Sections">
+          <a class="chip" href="settings.html#thresholds">Thresholds</a>
+          <a class="chip" href="settings.html#lead-times">Lead times</a>
+          <a class="chip" href="settings.html#users">Users</a>
+          <a class="chip" href="settings.html#audit">Audit log</a>
+        </nav>
+      </div>
+    </header>
+
+    <p class="notice section">Signed in with the role <strong>pharmacist</strong>: thresholds, suppliers and lead times can be edited; users and roles and the full audit log are managed by the <strong>administrator</strong> role and are shown read-only here (FR-14).</p>
+
+    <!-- Thresholds and safety stock (FR-11) -->
+    <section class="grid grid-1-1 section target-card" id="thresholds">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2>Thresholds and safety stock</h2>
+            <p class="card-sub">FR-11 &middot; stored in <code>threshold_config</code> &middot; last change 7 Oct 2026 15:02 by Head of pharmacy (<code>forecast_horizon_weeks</code> 8 &rarr; 12)</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <form class="form-grid" action="#" method="post">
+            <div class="field">
+              <label class="label" for="ss-rule">Safety-stock rule</label>
+              <select class="select" id="ss-rule" name="safety_stock_rule">
+                <option selected>Weeks of forecast consumption</option>
+                <option>Fixed quantity per item</option>
+              </select>
+              <span class="help">A per-item fixed quantity can override the rule on the item page</span>
+            </div>
+            <div class="field">
+              <label class="label" for="ss-weeks">Safety stock, weeks</label>
+              <input class="input" id="ss-weeks" name="safety_stock_weeks" type="number" min="0" step="0.5" value="1">
+              <span class="help">Current rule: 1 week &rarr; Amoxicillin 500 mg capsules &asymp; 21 packs</span>
+            </div>
+            <div class="field">
+              <label class="label" for="lead-default">Default lead time, days</label>
+              <input class="input" id="lead-default" name="default_lead_time_days" type="number" min="1" value="21">
+              <span class="help">Used for items without a supplier record</span>
+            </div>
+            <div class="field">
+              <label class="label" for="horizon">Forecast horizon, weeks</label>
+              <input class="input" id="horizon" name="forecast_horizon_weeks" type="number" min="1" max="52" value="12">
+              <span class="help">Default for new forecast runs (1&ndash;52)</span>
+            </div>
+            <div class="field">
+              <label class="label" for="interval">Prediction interval</label>
+              <select class="select" id="interval" name="interval_level">
+                <option selected>80%</option>
+                <option>90%</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="label" for="notify-level">Create notifications from level</label>
+              <select class="select" id="notify-level" name="notification_levels">
+                <option selected>High</option>
+                <option>Medium and High</option>
+              </select>
+              <span class="help">FR-12 &middot; recipients: users with the roles pharmacist and viewer</span>
+            </div>
+            <div class="field span-2 field-actions">
+              <button class="btn btn-primary" type="submit">Save thresholds</button>
+              <button class="btn" type="button">Reset to defaults</button>
+            </div>
+          </form>
+        </div>
+        <div class="card-footer">
+          <span>Saving recalculates the risk assessment of all items from the latest completed forecast run (#12) without a new run (FR-08) and writes an audit entry with the old and the new values (FR-15).</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2>Risk levels</h2>
+            <p class="card-sub">Fixed definition (FR-08), shown for reference</p>
+          </div>
+        </div>
+        <div class="card-body flush table-wrap">
+          <table class="table table-compact">
+            <thead>
+              <tr>
+                <th scope="col">Level</th>
+                <th scope="col">Rule</th>
+                <th scope="col" class="num">Items (run #12)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="badge badge-high">High</span></td><td>Projected stock reaches the safety stock within the item's lead time</td><td class="num">4</td></tr>
+              <tr><td><span class="badge badge-medium">Medium</span></td><td>Projected stock reaches the safety stock within the forecast horizon, but after the lead time</td><td class="num">7</td></tr>
+              <tr><td><span class="badge badge-low">Low</span></td><td>Projected stock stays above the safety stock for the whole horizon</td><td class="num">19</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card-body">
+          <p class="small muted">Projected stock of a week = current stock + planned receipts due by that week &minus; cumulative forecast up to that week. Expected stock-out date = the first week in which the projected stock is at or below the safety stock.</p>
+          <p class="small muted">Effect of a change is shown as the new counts by level before the pharmacist confirms (planned for the Vue implementation).</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Suppliers and lead times (FR-04) -->
+    <section class="section target-card" id="lead-times">
+      <div class="grid grid-1-2">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2>Suppliers</h2>
+              <p class="card-sub"><code>supplier</code> &middot; FR-04</p>
+            </div>
+            <button class="btn btn-sm" type="button">Add supplier</button>
+          </div>
+          <div class="card-body flush table-wrap">
+            <table class="table table-compact">
+              <thead>
+                <tr>
+                  <th scope="col">Supplier</th>
+                  <th scope="col" class="num">Items</th>
+                  <th scope="col" class="num">Lead time</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>SK-Pharmacy<span class="cell-sub">Centralised supply (guaranteed volume of free medical care)</span></td><td class="num">22</td><td class="num">21&ndash;28 d</td></tr>
+                <tr><td>Distributor A<span class="cell-sub">Own purchases</span></td><td class="num">5</td><td class="num">14 d</td></tr>
+                <tr><td>Distributor B<span class="cell-sub">Own purchases</span></td><td class="num">3</td><td class="num">10 d</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2>Lead times per item</h2>
+              <p class="card-sub"><code>item_supplier</code>: lead time in days and primary supplier per item &middot; the primary supplier's lead time is used for the risk level</p>
+            </div>
+            <button class="btn btn-sm" type="button">Add lead time</button>
+          </div>
+          <div class="card-body flush table-wrap">
+            <table class="table table-compact">
+              <thead>
+                <tr>
+                  <th scope="col">Item</th>
+                  <th scope="col">Supplier</th>
+                  <th scope="col" class="num">Lead time, days</th>
+                  <th scope="col">Primary</th>
+                  <th scope="col">Updated</th>
+                  <th scope="col"><span class="sr-only">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><a href="item.html">Amoxicillin 500 mg capsules</a><span class="item-code">MED-0001</span></td><td>SK-Pharmacy</td><td class="num">21</td><td><span class="tag">primary</span></td><td class="nowrap">30 Sep 2026</td><td class="actions"><button class="btn btn-sm btn-link" type="button">Edit</button></td></tr>
+                <tr><td><a href="item.html">Insulin glargine 100 IU/ml 3 ml</a><span class="item-code">MED-0012</span></td><td>SK-Pharmacy</td><td class="num">28</td><td><span class="tag">primary</span></td><td class="nowrap">30 Sep 2026</td><td class="actions"><button class="btn btn-sm btn-link" type="button">Edit</button></td></tr>
+                <tr><td><a href="item.html">Sodium chloride 0.9% 500 ml</a><span class="item-code">MED-0015</span></td><td>SK-Pharmacy</td><td class="num">21</td><td><span class="tag">primary</span></td><td class="nowrap">30 Sep 2026</td><td class="actions"><button class="btn btn-sm btn-link" type="button">Edit</button></td></tr>
+                <tr><td><a href="item.html">Salbutamol 100 mcg/dose inhaler</a><span class="item-code">MED-0028</span></td><td>Distributor A</td><td class="num">14</td><td><span class="tag">primary</span></td><td class="nowrap">16 Oct 2026</td><td class="actions"><button class="btn btn-sm btn-link" type="button">Edit</button></td></tr>
+                <tr><td><a href="item.html">Salbutamol 100 mcg/dose inhaler</a><span class="item-code">MED-0028</span></td><td>SK-Pharmacy</td><td class="num">28</td><td>&mdash;</td><td class="nowrap">30 Sep 2026</td><td class="actions"><button class="btn btn-sm btn-link" type="button">Edit</button></td></tr>
+                <tr><td><a href="item.html">Meropenem 1 g powder for injection</a><span class="item-code">MED-0005</span></td><td>Distributor A</td><td class="num">14</td><td><span class="tag">primary</span></td><td class="nowrap">30 Sep 2026</td><td class="actions"><button class="btn btn-sm btn-link" type="button">Edit</button></td></tr>
+                <tr><td><a href="item.html">Ondansetron 4 mg/2 ml solution for injection</a><span class="item-code">MED-0019</span></td><td>Distributor B</td><td class="num">10</td><td><span class="tag">primary</span></td><td class="nowrap">30 Sep 2026</td><td class="actions"><button class="btn btn-sm btn-link" type="button">Edit</button></td></tr>
+                <tr><td><a href="item.html">Ibuprofen 400 mg tablets</a><span class="item-code">MED-0008</span></td><td>Distributor B</td><td class="num">10</td><td><span class="tag">primary</span></td><td class="nowrap">30 Sep 2026</td><td class="actions"><button class="btn btn-sm btn-link" type="button">Edit</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card-footer">
+            <span>8 of 33 item&ndash;supplier links shown &middot; a change of a lead time is written to the audit log (FR-15)</span>
+            <span class="btn-row">
+              <button class="btn btn-sm" type="button" disabled>Previous</button>
+              <button class="btn btn-sm" type="button">Next</button>
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Users and roles (FR-14) -->
+    <section class="section target-card" id="users">
+      <div class="grid grid-2-1">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2>Users and roles</h2>
+              <p class="card-sub"><code>app_user</code> &middot; FR-14 &middot; one role per user &middot; passwords are stored as hashes only (NFR-03) &middot; fictional sample accounts on an example domain</p>
+            </div>
+            <button class="btn btn-sm" type="button" disabled title="Administrator role required">Add user</button>
+          </div>
+          <div class="card-body flush table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col">E-mail</th>
+                  <th scope="col">Full name</th>
+                  <th scope="col">Role</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Last login</th>
+                  <th scope="col"><span class="sr-only">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td class="mono small nowrap">admin@hospital.example</td><td>System administrator</td><td><span class="tag">administrator</span></td><td><span class="pill pill-ok">active</span></td><td class="nowrap">19 Oct 2026</td><td class="actions nowrap"><button class="btn btn-sm btn-link" type="button" disabled>Edit</button></td></tr>
+                <tr class="is-flagged"><td class="mono small nowrap">pharmacy.head@hospital.example</td><td>Head of pharmacy <span class="subtle">&mdash; you</span></td><td><span class="tag">pharmacist</span></td><td><span class="pill pill-ok">active</span></td><td class="nowrap">19 Oct 2026</td><td class="actions nowrap"><button class="btn btn-sm btn-link" type="button" title="Change password">Password</button></td></tr>
+                <tr><td class="mono small nowrap">pharmacist@hospital.example</td><td>Pharmacist</td><td><span class="tag">pharmacist</span></td><td><span class="pill pill-ok">active</span></td><td class="nowrap">15 Oct 2026</td><td class="actions nowrap"><button class="btn btn-sm btn-link" type="button" disabled>Edit</button></td></tr>
+                <tr><td class="mono small nowrap">procurement@hospital.example</td><td>Procurement specialist</td><td><span class="tag">pharmacist</span></td><td><span class="pill pill-ok">active</span></td><td class="nowrap">16 Oct 2026</td><td class="actions nowrap"><button class="btn btn-sm btn-link" type="button" disabled>Edit</button></td></tr>
+                <tr><td class="mono small nowrap">therapy.dept@hospital.example</td><td>Head of therapy department</td><td><span class="tag">viewer</span></td><td><span class="pill pill-ok">active</span></td><td class="nowrap">14 Oct 2026</td><td class="actions nowrap"><button class="btn btn-sm btn-link" type="button" disabled>Edit</button></td></tr>
+                <tr class="is-inactive"><td class="mono small nowrap">surgery.dept@hospital.example</td><td>Head of surgery department</td><td><span class="tag">viewer</span></td><td><span class="pill pill-neutral">inactive</span></td><td class="nowrap">&mdash;</td><td class="actions nowrap"><button class="btn btn-sm btn-link" type="button" disabled>Edit</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card-footer">
+            <span>Users are deactivated, not deleted, so that import batches, forecast runs and audit entries keep their author. Whether the procurement specialist needs a role narrower than <code>pharmacist</code> is an open question (use cases, section 8).</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2>Permissions by role</h2>
+              <p class="card-sub">Summary of FR-14; the full matrix is in <code>docs/requirements.md</code></p>
+            </div>
+          </div>
+          <div class="card-body flush table-wrap">
+            <table class="table table-compact table-matrix">
+              <thead>
+                <tr>
+                  <th scope="col">Action</th>
+                  <th scope="col">admin</th>
+                  <th scope="col">pharm.</th>
+                  <th scope="col">viewer</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>View dashboard, items, forecasts, risks</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+                <tr><td>Export reports</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+                <tr><td>Receive notifications</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+                <tr><td>Import data, maintain catalogue</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td></tr>
+                <tr><td>Run forecasts</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td></tr>
+                <tr><td>Record planned deliveries, lead times</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td></tr>
+                <tr><td>Configure thresholds</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td></tr>
+                <tr><td>Manage users and roles</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td></tr>
+                <tr><td>View the full audit log</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Audit log (FR-15) -->
+    <section class="card section target-card" id="audit">
+      <div class="card-header">
+        <div>
+          <h2>Audit log</h2>
+          <p class="card-sub">FR-15 &middot; <code>audit_log</code>: imports, forecast runs and configuration changes &middot; most recent entries; the full log with filters by user, action, entity and date is available to the administrator</p>
+        </div>
+        <button class="btn btn-sm" type="button" disabled title="Administrator role required">Open full audit log</button>
+      </div>
+      <div class="card-body flush table-wrap">
+        <table class="table table-compact">
+          <thead>
+            <tr>
+              <th scope="col">When</th>
+              <th scope="col">User</th>
+              <th scope="col">Action</th>
+              <th scope="col">Entity</th>
+              <th scope="col">Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="nowrap">19 Oct 2026 10:56</td><td>Head of pharmacy</td><td><code>forecast_run.finish</code></td><td class="nowrap">forecast_run #12</td><td>30 items, 41 s, High 4 / Medium 7 / Low 19, 16 notifications</td></tr>
+            <tr><td class="nowrap">19 Oct 2026 10:55</td><td>Head of pharmacy</td><td><code>forecast_run.create</code></td><td class="nowrap">forecast_run #12</td><td>sba, horizon 12, all active items, seed 42</td></tr>
+            <tr><td class="nowrap">19 Oct 2026 10:31</td><td>Head of pharmacy</td><td><code>import.finish</code></td><td class="nowrap">import_batch #29</td><td>receipts_2026-09.csv, 14 rows</td></tr>
+            <tr><td class="nowrap">19 Oct 2026 10:26</td><td>Head of pharmacy</td><td><code>import.finish</code></td><td class="nowrap">import_batch #28</td><td>stock_2026-09.csv, 178 rows, 1 stock-out week flagged</td></tr>
+            <tr><td class="nowrap">19 Oct 2026 10:20</td><td>Head of pharmacy</td><td><code>import.finish</code></td><td class="nowrap">import_batch #27</td><td>consumption_2026-09.csv, 180 rows</td></tr>
+            <tr><td class="nowrap">19 Oct 2026 10:12</td><td>Head of pharmacy</td><td><code>import.fail</code></td><td class="nowrap">import_batch #26</td><td>consumption_2026-09.csv, 4 blocking errors</td></tr>
+            <tr><td class="nowrap">16 Oct 2026 11:40</td><td>Procurement specialist</td><td><code>item_supplier.updated</code></td><td class="nowrap">item_supplier MED-0028 / Distributor A</td><td>lead_time_days 10 &rarr; 14</td></tr>
+            <tr><td class="nowrap">7 Oct 2026 15:02</td><td>Head of pharmacy</td><td><code>threshold.update</code></td><td class="nowrap">threshold_config forecast_horizon_weeks</td><td>8 &rarr; 12</td></tr>
+            <tr><td class="nowrap">6 Oct 2026 09:40</td><td>System administrator</td><td><code>user.create</code></td><td class="nowrap">app_user #5</td><td>therapy.dept@hospital.example, role viewer</td></tr>
+            <tr><td class="nowrap">22 Sep 2026 09:05</td><td>Procurement specialist</td><td><code>import.finish</code></td><td class="nowrap">import_batch #25</td><td>planned_receipts_2026-10.csv, 5 rows</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card-footer">
+        <span>Showing 10 of 112 entries</span>
+      </div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

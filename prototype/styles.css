@@ -1,6 +1,6 @@
 /*
   PharmaStock prototype - shared stylesheet
-  PHA2-18 - Last updated: 2026-10-19
+  PHA2-18 - Last updated: 2026-10-20
 
   Static mockups of the key screens. Plain CSS, no framework, no build step.
   Colours and spacing are defined once as custom properties on :root so that
@@ -867,9 +867,17 @@ code,
 }
 
 .field-check label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  display: inline;
+  line-height: 1.6;
+}
+
+.field-check input {
+  margin: 0 6px 0 0;
+  vertical-align: middle;
+}
+
+.table .status-wide {
+  min-width: 280px;
 }
 
 .label {
@@ -1063,6 +1071,89 @@ code,
   height: 12px;
   border: 1px solid var(--color-border-strong);
   background: repeating-linear-gradient(45deg, #c9ced6 0 2px, transparent 2px 6px);
+}
+
+/* ---------- forms: stacked layout, radio lists, upload box ---------- */
+.form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-stack fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.form-stack legend {
+  padding: 0;
+  margin-bottom: 6px;
+}
+
+.radio-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.92rem;
+}
+
+.radio-list label {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.radio-list .help {
+  flex-basis: 100%;
+  padding-left: 22px;
+}
+
+.select-inline {
+  min-width: 220px;
+  padding: 4px 8px;
+}
+
+.upload-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+}
+
+/* ---------- inline statistics (data-quality summary) ---------- */
+.stat {
+  padding: 10px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+}
+
+.stat-value {
+  margin-top: 4px;
+  font-size: 1.4rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- permission matrix ---------- */
+.table-matrix td.yes,
+.table-matrix td.no {
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+.table-matrix td.yes {
+  color: var(--status-ok-text);
+}
+
+.table-matrix td.no {
+  color: var(--color-text-muted);
 }
 
 /* card that is the target of an in-page link (e.g. "Record delivery") */

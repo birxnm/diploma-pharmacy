@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<!--
+  PharmaStock prototype - Forecast runs
+  PHA2-18 - Last updated: 2026-10-20
+  Static mockup. All numbers, dates and item names are illustrative sample
+  values (same scenario on every screen); nothing is computed or loaded.
+  The hold-out metrics are placeholders for layout only and are not results
+  of the forecasting module.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Forecast runs - PharmaStock prototype</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">P</span>
+      <span class="brand-name">PharmaStock</span>
+      <span class="brand-tag">mockup</span>
+    </div>
+    <nav class="nav" aria-label="Main navigation">
+      <a class="nav-link" href="index.html">Dashboard</a>
+      <a class="nav-link" href="risks.html">Risks <span class="count">4</span></a>
+      <a class="nav-link" href="items.html">Catalogue</a>
+      <a class="nav-link" href="item.html">Item page</a>
+      <a class="nav-link is-active" href="forecast.html" aria-current="page">Forecast runs</a>
+      <a class="nav-link" href="imports.html">Imports</a>
+      <div class="nav-section">Administration</div>
+      <a class="nav-link" href="settings.html">Settings</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user">
+        <span class="avatar" aria-hidden="true">HP</span>
+        <div>
+          <div class="user-name">Head of pharmacy</div>
+          <div>role: pharmacist</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="content">
+
+    <header class="topbar">
+      <div>
+        <h1>Forecast runs</h1>
+        <p class="subtitle">Last completed run #12 &middot; 19 Oct 2026 10:55 &middot; no run in progress &middot; data cut-off: week of 12 Oct 2026</p>
+      </div>
+      <div class="topbar-actions">
+        <a class="btn" href="risks.html">Open risk list</a>
+        <a class="btn" href="settings.html#thresholds">Thresholds</a>
+      </div>
+    </header>
+
+    <!-- New run form + summary of the last run -->
+    <section class="grid grid-1-1 section">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2>New forecast run</h2>
+            <p class="card-sub">Creates a <code>forecast_run</code> and calls <code>forecasting.api.forecast_items(history, horizon, config)</code> in the background (FR-06)</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <form class="form-stack" action="#" method="post">
+            <fieldset class="field">
+              <legend class="label">Items</legend>
+              <div class="radio-list">
+                <label><input type="radio" name="scope" value="all" checked> All active items <span class="subtle">(30 items)</span></label>
+                <label><input type="radio" name="scope" value="group"> Items of a group</label>
+                <select class="select select-inline" aria-label="Group">
+                  <option>Antibacterials (6)</option>
+                  <option>Analgesics and antipyretics (4)</option>
+                  <option>Antidiabetics (2)</option>
+                  <option>Infusion solutions (3)</option>
+                  <option>Respiratory (2)</option>
+                </select>
+                <label><input type="radio" name="scope" value="selected"> Selected items</label>
+                <textarea class="textarea" aria-label="Selected item codes" placeholder="Item codes separated by commas or new lines, e.g. MED-0001, MED-0012"></textarea>
+              </div>
+            </fieldset>
+
+            <div class="form-grid">
+              <div class="field">
+                <label class="label" for="horizon">Horizon, weeks</label>
+                <input class="input" id="horizon" name="horizon" type="number" min="1" max="52" value="12">
+                <span class="help">Weekly step; default 12 from thresholds (1&ndash;52)</span>
+              </div>
+              <div class="field">
+                <label class="label" for="model">Model</label>
+                <select class="select" id="model" name="model">
+                  <option selected>sba &mdash; primary model (default)</option>
+                  <option>croston</option>
+                  <option>moving_average (window 8)</option>
+                  <option>naive</option>
+                  <option>seasonal_naive (season 52)</option>
+                  <option disabled>lightgbm &mdash; planned, not available yet</option>
+                </select>
+                <span class="help">Baselines are available for comparison runs</span>
+              </div>
+              <div class="field">
+                <label class="label" for="interval">Prediction interval</label>
+                <select class="select" id="interval" name="interval">
+                  <option selected>80%</option>
+                  <option>90%</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="label" for="censored">Stock-out weeks (censored demand)</label>
+                <select class="select" id="censored" name="censored">
+                  <option selected>Exclude from fitting (default)</option>
+                  <option>Impute with expected demand (experimental)</option>
+                </select>
+                <span class="help">FR-17: zero consumption in flagged weeks is never learned as demand</span>
+              </div>
+              <div class="field">
+                <label class="label" for="cutoff">Data cut-off</label>
+                <input class="input" id="cutoff" name="cutoff" type="text" value="Week of 12 Oct 2026" readonly>
+                <span class="help">Last imported week; history after it is not used</span>
+              </div>
+              <div class="field">
+                <label class="label" for="seed">Random seed</label>
+                <input class="input" id="seed" name="seed" type="number" value="42" readonly>
+                <span class="help">Fixed; stored with the configuration in <code>config_json</code> (NFR-05)</span>
+              </div>
+              <div class="field span-2 field-check">
+                <label><input type="checkbox" name="notify" checked> Create in-app notifications for High-risk items when the run completes (FR-12)</label>
+              </div>
+              <div class="field span-2 field-actions">
+                <button class="btn btn-primary" type="submit">Start run</button>
+                <button class="btn" type="button">Preview configuration</button>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="card-footer">
+          <span>Only one run can be in progress. A run for 30 items takes under a minute and continues in the background; the risk list refreshes when it completes.</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2>Run #12</h2>
+            <p class="card-sub">Latest completed run &middot; the risk list and the item pages show its results</p>
+          </div>
+          <span class="pill pill-ok">completed</span>
+        </div>
+        <div class="card-body">
+          <dl class="kv">
+            <dt>Started</dt>
+            <dd>19 Oct 2026 10:55:12 by Head of pharmacy</dd>
+            <dt>Finished</dt>
+            <dd>19 Oct 2026 10:55:53 (41 s)</dd>
+            <dt>Items</dt>
+            <dd>30 forecast &middot; 0 skipped</dd>
+            <dt>Horizon</dt>
+            <dd>12 weeks (19 Oct 2026 &ndash; 4 Jan 2027)</dd>
+            <dt>Model</dt>
+            <dd><code>sba</code> &middot; 80% interval &middot; censored weeks excluded</dd>
+            <dt>Configuration</dt>
+            <dd class="mono small">hash 3f9c1b2e &middot; seed 42 &middot; cut-off 2026-10-12 &middot; dataset synthetic-v0.1</dd>
+            <dt>Risk assessment</dt>
+            <dd><span class="badge badge-high">High 4</span> <span class="badge badge-medium">Medium 7</span> <span class="badge badge-low">Low 19</span></dd>
+            <dt>Notifications</dt>
+            <dd>4 high-risk items &rarr; 16 notifications for 4 users</dd>
+            <dt>Audit</dt>
+            <dd><code>forecast_run.create</code>, <code>forecast_run.finish</code> (FR-15)</dd>
+          </dl>
+        </div>
+        <div class="card-footer">
+          <span class="btn-row">
+            <a class="btn btn-sm" href="risks.html">Risk list</a>
+            <button class="btn btn-sm" type="button">Download run log</button>
+            <button class="btn btn-sm" type="button">Export forecasts CSV</button>
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Previous runs -->
+    <section class="card section">
+      <div class="card-header">
+        <div>
+          <h2>Previous runs</h2>
+          <p class="card-sub">One row per <code>forecast_run</code> &middot; a failed run stores no forecasts, risk assessments or notifications; the previous completed run stays current</p>
+        </div>
+        <div class="btn-row">
+          <select class="select" aria-label="Filter by status">
+            <option>All statuses</option>
+            <option>completed</option>
+            <option>failed</option>
+            <option>running</option>
+          </select>
+        </div>
+      </div>
+      <div class="card-body flush table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Started</th>
+              <th scope="col">Started by</th>
+              <th scope="col">Items</th>
+              <th scope="col" class="num">Horizon</th>
+              <th scope="col">Model</th>
+              <th scope="col">Status</th>
+              <th scope="col" class="num">Duration</th>
+              <th scope="col">High / Medium / Low</th>
+              <th scope="col"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono">12</td>
+              <td class="nowrap">19 Oct 2026 10:55</td>
+              <td>Head of pharmacy</td>
+              <td>all active (30)</td>
+              <td class="num">12</td>
+              <td><code>sba</code></td>
+              <td><span class="pill pill-ok">completed</span></td>
+              <td class="num">41 s</td>
+              <td class="nowrap">4 / 7 / 19</td>
+              <td class="actions nowrap"><a class="btn btn-sm" href="risks.html">Risks</a> <button class="btn btn-sm btn-link" type="button">Details</button></td>
+            </tr>
+            <tr>
+              <td class="mono">11</td>
+              <td class="nowrap">12 Oct 2026 09:15</td>
+              <td>Head of pharmacy</td>
+              <td>all active (30)</td>
+              <td class="num">12</td>
+              <td><code>croston</code> <span class="tag">comparison</span></td>
+              <td><span class="pill pill-ok">completed</span></td>
+              <td class="num">39 s</td>
+              <td class="nowrap">5 / 6 / 19</td>
+              <td class="actions nowrap"><button class="btn btn-sm" type="button">Risks</button> <button class="btn btn-sm btn-link" type="button">Details</button></td>
+            </tr>
+            <tr>
+              <td class="mono">10</td>
+              <td class="nowrap">5 Oct 2026 09:30</td>
+              <td>Pharmacist</td>
+              <td>all active (30)</td>
+              <td class="num">12</td>
+              <td><code>sba</code></td>
+              <td class="status-wide"><span class="pill pill-fail">failed</span><span class="cell-sub">ValidationError: gap in the weekly index of MED-0017 Ringer's solution 500 ml (week of 24 Aug 2026 missing); no forecast produced (NFR-06)</span></td>
+              <td class="num">2 s</td>
+              <td class="subtle">&mdash;</td>
+              <td class="actions nowrap"><button class="btn btn-sm btn-link" type="button">Details</button></td>
+            </tr>
+            <tr>
+              <td class="mono">9</td>
+              <td class="nowrap">21 Sep 2026 11:02</td>
+              <td>Head of pharmacy</td>
+              <td>all active (30)</td>
+              <td class="num">12</td>
+              <td><code>sba</code></td>
+              <td><span class="pill pill-ok">completed</span></td>
+              <td class="num">40 s</td>
+              <td class="nowrap">3 / 8 / 19</td>
+              <td class="actions nowrap"><button class="btn btn-sm" type="button">Risks</button> <button class="btn btn-sm btn-link" type="button">Details</button></td>
+            </tr>
+            <tr>
+              <td class="mono">8</td>
+              <td class="nowrap">14 Sep 2026 10:48</td>
+              <td>Pharmacist</td>
+              <td>group Antibacterials (6)</td>
+              <td class="num">8</td>
+              <td><code>moving_average</code> (8)</td>
+              <td><span class="pill pill-ok">completed</span></td>
+              <td class="num">12 s</td>
+              <td class="nowrap">1 / 2 / 3</td>
+              <td class="actions nowrap"><button class="btn btn-sm" type="button">Risks</button> <button class="btn btn-sm btn-link" type="button">Details</button></td>
+            </tr>
+            <tr>
+              <td class="mono">7</td>
+              <td class="nowrap">7 Sep 2026 10:30</td>
+              <td>Head of pharmacy</td>
+              <td>all active (30)</td>
+              <td class="num">12</td>
+              <td><code>seasonal_naive</code> (52) <span class="tag">comparison</span></td>
+              <td><span class="pill pill-ok">completed</span></td>
+              <td class="num">8 s</td>
+              <td class="nowrap">2 / 9 / 19</td>
+              <td class="actions nowrap"><button class="btn btn-sm" type="button">Risks</button> <button class="btn btn-sm btn-link" type="button">Details</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card-footer">
+        <span>Showing 6 of 12 runs</span>
+        <span class="btn-row">
+          <button class="btn btn-sm" type="button" disabled>Previous</button>
+          <button class="btn btn-sm" type="button">Next</button>
+        </span>
+      </div>
+    </section>
+
+    <!-- Model comparison (FR-16) -->
+    <section class="card section">
+      <div class="card-header">
+        <div>
+          <h2>Model comparison on the hold-out period</h2>
+          <p class="card-sub">FR-16 &middot; all 30 active items &middot; test window 20 Jul &ndash; 12 Oct 2026 (13 weeks), rolling origin, censored weeks excluded from the evaluation set &middot; MAE and WAPE per <code>forecasting.evaluation.metrics</code></p>
+        </div>
+        <button class="btn btn-sm" type="button">Export CSV</button>
+      </div>
+      <div class="card-body flush table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Model</th>
+              <th scope="col">Parameters</th>
+              <th scope="col" class="num">MAE (mean over items)</th>
+              <th scope="col" class="num">WAPE (all items)</th>
+              <th scope="col" class="num">Items where best</th>
+              <th scope="col">Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="is-flagged">
+              <td><code>sba</code> <span class="tag">primary</span></td>
+              <td>&alpha; = 0.1</td>
+              <td class="num">5.9</td>
+              <td class="num">24.1%</td>
+              <td class="num">14</td>
+              <td class="small">Best on intermittent and lumpy items</td>
+            </tr>
+            <tr>
+              <td><code>croston</code></td>
+              <td>&alpha; = 0.1</td>
+              <td class="num">6.2</td>
+              <td class="num">25.3%</td>
+              <td class="num">6</td>
+              <td class="small">Positive bias on lumpy items</td>
+            </tr>
+            <tr>
+              <td><code>moving_average</code></td>
+              <td>window 8</td>
+              <td class="num">6.4</td>
+              <td class="num">26.0%</td>
+              <td class="num">5</td>
+              <td class="small">Competitive on smooth items</td>
+            </tr>
+            <tr>
+              <td><code>naive</code></td>
+              <td>&mdash;</td>
+              <td class="num">8.1</td>
+              <td class="num">33.2%</td>
+              <td class="num">3</td>
+              <td class="small">Reference baseline</td>
+            </tr>
+            <tr>
+              <td><code>seasonal_naive</code></td>
+              <td>season 52</td>
+              <td class="num">9.0</td>
+              <td class="num">36.8%</td>
+              <td class="num">2</td>
+              <td class="small">Needs at least two years of history</td>
+            </tr>
+            <tr class="is-inactive">
+              <td><code>lightgbm</code></td>
+              <td>lag, rolling and calendar features</td>
+              <td class="num">&mdash;</td>
+              <td class="num">&mdash;</td>
+              <td class="num">&mdash;</td>
+              <td class="small">Planned (Nov&ndash;Dec 2026)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card-footer">
+        <span>Sample values for layout only. WAPE is undefined for an item whose actual consumption in the window is zero; such items are excluded from WAPE and counted in the note. The real comparison will be produced by the experiments in <code>forecasting/experiments/</code>.</span>
+      </div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>
