@@ -1,10 +1,10 @@
 # PharmaStock — Plan and Milestones
 
-_PHA2-20 · Last updated: 2026-10-19 · Author: Evelina Penkova · Reviewer: Birkhanym Kazhymukhamet_
+_PHA2-20 · Last updated: 2026-10-20 · Author: Evelina Penkova · Reviewer: Birkhanym Kazhymukhamet_
 
 This document is the working plan of the diploma project "Development of smart supply chain analytics system for forecasting pharmaceutical inventory and preventing medicine shortages in healthcare organizations" (short name: **PharmaStock**) for the academic year 2026–2027 (September 2026 – June 2027). It turns the monthly plan approved by the supervisor into a timeline, milestones with exit criteria, a supervision cadence and a definition of done that the team applies to every task.
 
-Sources of the plan: the justification letter approved by the supervisor, Kuralay Makhmetova, on 9 October 2026 (team, roles, plan and evaluation methodology); [proposal.md](../proposal.md) (objectives, scope, success criteria, deliverables per pre-defense); [requirements.md](../requirements.md); [verification-and-evaluation-plan.md](../verification-and-evaluation-plan.md). Work is tracked as tasks in the [Linear project PharmaStock](https://linear.app/pharmacy-kz/project/pharmastock-03a3f33ce30b) and mirrored in [task-register.md](task-register.md). The split of responsibilities is in [responsibilities.md](responsibilities.md); the risk register (`risks.md`) is being prepared as the second part of PHA2-20.
+Sources of the plan: the justification letter approved by the supervisor, Kuralay Makhmetova, on 9 October 2026 (team, roles, plan and evaluation methodology); [proposal.md](../proposal.md) (objectives, scope, success criteria, deliverables per pre-defense); [requirements.md](../requirements.md); [verification-and-evaluation-plan.md](../verification-and-evaluation-plan.md). Work is tracked as tasks in the [Linear project PharmaStock](https://linear.app/pharmacy-kz/project/pharmastock-03a3f33ce30b) and mirrored in [task-register.md](task-register.md). The split of responsibilities is in [responsibilities.md](responsibilities.md); the risk register and the dependencies between modules are in [risks.md](risks.md).
 
 ## 1. Key dates
 
@@ -154,7 +154,7 @@ The plan is reviewed at the weekly supervisor meeting. Changes to deadlines, sco
 |---|---|
 | [responsibilities.md](responsibilities.md) | Responsibilities per work area (RACI), repository ownership, review rules |
 | [task-register.md](task-register.md) | Mirror of the [Linear project PharmaStock](https://linear.app/pharmacy-kz/project/pharmastock-03a3f33ce30b) with statuses, deadlines and branches |
-| `risks.md` | Risk register and dependencies (second part of PHA2-20, in preparation) |
+| [risks.md](risks.md) | Risk register with owners and triggers; dependencies between modules and supervisor checkpoints |
 | [../proposal.md](../proposal.md) | Objectives, scope, success criteria, deliverables per pre-defense |
 | [../verification-and-evaluation-plan.md](../verification-and-evaluation-plan.md) | Metrics, baselines, split, testing and user evaluation |
 | [../supervision/feedback-log.md](../supervision/feedback-log.md) | Supervisor meetings, feedback and decisions |
