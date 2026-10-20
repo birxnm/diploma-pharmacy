@@ -1,4 +1,4 @@
-# PHA2-4 - Last updated: 2026-10-14
+# PHA2-4 - Last updated: 2026-10-20 (experiment results rule added with PHA2-24)
 # Ignore rules for the PharmaStock repository (backend, forecasting, frontend, prototype, docs).
 # Rule of thumb: generated files, local environments, secrets and datasets are never committed.
 
@@ -97,6 +97,13 @@ synthetic-large/
 *.npz
 !forecasting/data/sample/*.csv
 !forecasting/data/sample/*.xlsx
+
+# --- Experiment results ------------------------------------------------------
+# Run directories written by forecasting/experiments/run_baselines.py
+# (config.yaml, metrics.json, predictions.csv) are produced locally and are not
+# committed; see forecasting/experiments/results/README.md. The README and
+# .gitkeep of results/ stay tracked.
+forecasting/experiments/results/*/
 
 # --- Logs and temporary files ----------------------------------------------
 *.log

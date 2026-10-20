@@ -1,0 +1,47 @@
+# Baseline evaluation on the committed synthetic sample (task PHA2-24).
+# Last updated: 2026-10-20. Every run is fully defined by this file (FQ-11, NFR-05);
+# change the file, not the command line, when a parameter changes.
+
+experiment: baselines
+task: PHA2-24
+
+dataset:
+  id: synthetic-0.1.0-i20-w104-s42
+  # Relative paths are resolved from the repository root.
+  path: forecasting/data/sample
+
+split:
+  # Rolling-origin evaluation (FQ-09): the test window at each origin is the
+  # next horizon_weeks weeks; the windows are placed by
+  # forecasting.evaluation.split.rolling_origin_windows and recorded in metrics.json.
+  horizon_weeks: 12
+  n_windows: 3
+  # Shortest training history at any origin; 52 keeps seasonal_naive applicable.
+  min_train_weeks: 52
+
+# Handling of stock-out weeks (FR-17, FQ-10). "exclude" is the only method
+# implemented in this runner: the week is removed from the training series and
+# excluded from the metrics. "impute" is planned.
+censoring_method: exclude
+
+# Items with fewer non-censored training weeks than this at an origin are
+# listed in metrics.json and excluded from the metrics at that origin (FQ-04).
+min_history_weeks: 12
+
+# A baseline comparison must include every baseline (FR-16, scenario S4).
+require_all_baselines: true
+
+# Baselines are deterministic; the seed is recorded with the results and will
+# be passed to the machine-learning models added in later experiments.
+seed: 42
+
+models:
+  - name: naive
+  - name: seasonal_naive
+    params: {season_length: 52}
+  - name: moving_average
+    params: {window: 8}
+  - name: croston
+    params: {alpha: 0.1}
+  - name: sba
+    params: {alpha: 0.1}
