@@ -1,6 +1,6 @@
 # PharmaStock — Verification and evaluation plan
 
-Task: PHA2-19 · Last updated: 2026-10-19 · Status: draft v0.1 (section 4 complete; sections 5 and 6 to be completed by their owners) · Authors: Evelina Penkova (editor, forecasting evaluation), Abzal Bakhytov (backend and integration testing, section 5), Birkhanym Kazhymukhamet (user testing, section 6)
+Task: PHA2-19 · Last updated: 2026-10-20 · Status: draft v0.2.2 (all sections drafted; numeric targets to be confirmed after EXP-01 and the user-testing pilot) · Authors: Evelina Penkova (editor, forecasting evaluation), Abzal Bakhytov (backend and integration testing, section 5), Birkhanym Kazhymukhamet (user testing, section 6)
 
 ---
 
@@ -18,7 +18,7 @@ The plan covers three areas with one owner each:
 
 Everything in this document is a plan. Results are not reported here; they are written to the locations named in each section (experiment reports, test runs in CI, the user-testing report) and summarised in the thesis. Where an activity has not started, the status says "planned".
 
-The methodology (time-based hold-out evaluation against baselines with MAE and WAPE, alert precision and recall, user testing) is the one approved by the supervisor in the justification letter of 9 October 2026. Numeric targets are stated in section 4.8 as working targets to be confirmed after the first baseline run, so that the evaluation is not tuned to a desired result.
+The methodology (time-based hold-out evaluation against baselines with MAE and WAPE, alert precision and recall, user testing) is the one approved by the supervisor in the justification letter of 9 October 2026. Numeric targets are stated in sections 4.8 and 6.6 as working targets to be confirmed after the first baseline run and the user-testing pilot, so that the evaluation is not tuned to a desired result.
 
 ## 2. Conventions and related documents
 
@@ -28,12 +28,12 @@ The method codes are the ones of `docs/requirements.md`, section 7, and are used
 
 | Code | Method | Where the evidence lives |
 |---|---|---|
-| T | Automated test (pytest in `backend/tests/` and `forecasting/tests/`, Vitest in `frontend/` later), run in CI on every pull request (NFR-08) | Test files named after the scenario IDs of the requirements (for example `test_fr08_s1_high_risk`); CI run on the pull request |
+| T | Automated test (pytest in `backend/tests/` and `forecasting/tests/`, Vitest in `frontend/`: unit tests of the Vite scaffold in review (PHA2-23), component tests of the main screens later), run in CI on every pull request (NFR-08) | Test files named after the scenario IDs of the requirements (for example `test_fr08_s1_high_risk`); CI run on the pull request |
 | D | Demonstration to the supervisor following a scripted scenario | Demo script in this plan or in `docs/supervision/feedback-log.md`; feedback recorded there |
 | I | Inspection or review of code, configuration or documents | Pull request review; checklist in this plan |
 | E | Experiment on hold-out data with saved results | `forecasting/experiments/` (configurations, results, reports) |
 | U | User testing with pharmacy staff | `docs/ux/user-testing-report.md` (planned) |
-| M | Measurement of time or resource usage on the synthetic dataset | Performance report in `forecasting/experiments/reports/` |
+| M | Measurement of time or resource usage on the synthetic dataset | Performance reports in `forecasting/experiments/reports/` |
 
 ### 2.2 Identifiers used in this plan
 
@@ -45,8 +45,9 @@ The method codes are the ones of `docs/requirements.md`, section 7, and are used
 | S-01 … S-06 | User scenarios | `docs/ux/user-scenarios.md` |
 | UC-01 … UC-14 | Use cases | `docs/ux/use-cases.md` |
 | E-xx | Evaluation targets of this plan | Section 4.8 |
-| EXP-nn | Forecasting experiments | Section 4.9 |
-| UT-nn | User-testing tasks | Section 6 (to be completed) |
+| EXP-nn, PERF-nn | Forecasting experiments and performance measurements | Sections 4.9 and 5.6 |
+| IT-nn | Steps of the integration scenario | Section 5.3 |
+| UT-nn, P-n | User-testing tasks and participants | Sections 6.3 and 6.4 |
 
 ### 2.3 Related documents
 
@@ -54,33 +55,37 @@ The method codes are the ones of `docs/requirements.md`, section 7, and are used
 |---|---|---|
 | Proposal | `docs/proposal.md` | Success criteria S-01 … S-06 that this plan operationalises |
 | Requirements | `docs/requirements.md` | Requirement IDs, forecasting requirements FQ-01 … FQ-15, acceptance scenarios, traceability table (section 7) |
-| Architecture | `docs/architecture/architecture.md` | Component boundaries that define the test levels; risk-calculation formulas (section 5.2) |
+| Architecture | `docs/architecture/architecture.md` | Component boundaries that define the test levels; risk-calculation formulas (section 5.2); authentication design (section 8.1) |
 | API contract | `docs/architecture/api-contract.md` | Endpoints exercised by API and integration tests |
 | Database schema | `docs/architecture/database-schema.md` | Tables used by database tests |
 | Data specification | `docs/data/data-specification.md` | Import formats and the synthetic dataset used as test data |
 | User scenarios and use cases | `docs/ux/user-scenarios.md`, `docs/ux/use-cases.md` | Tasks of the user-testing sessions |
+| Evidence of relevance | `docs/evidence-of-relevance/interview-guide.md`, `interview-log.md`, `stakeholders.md` | Consent rules and the contacts through which user-testing participants are recruited |
 | Plan and milestones | `docs/project-management/plan-and-milestones.md` | Dates of the activities in section 7 |
+| Contributing guide | `CONTRIBUTING.md` | Pull request rules that CI gating enforces |
+| Backend | `backend/README.md` | Setup used by the test environment; status of the backend |
 | Forecasting module | `forecasting/README.md` | Module description; the mapping FQ → test file and the experiment command are maintained there |
 
 Tasks are tracked in the [Linear project PharmaStock](https://linear.app/pharmacy-kz/project/pharmastock-03a3f33ce30b); every activity below is or will be a DIP task.
 
 ## 3. Overview of activities
 
-| ID | Activity | Method | Owner | Planned period | Status (2026-10-19) |
+| ID | Activity | Method | Owner | Planned period | Status (2026-10-20) |
 |---|---|---|---|---|---|
-| A-1 | Forecasting unit tests (schema, validation, baselines, metrics, split, censoring, reproducibility) | T | Evelina | Nov 2026 → ongoing | planned |
+| A-1 | Forecasting unit tests (schema, validation, baselines, metrics, split, censoring, reproducibility) | T | Evelina | Oct 2026 → ongoing | in progress: validation, baselines, metrics, split and API tests done (PHA2-16); schema, censoring, alert and reproducibility tests planned (section 4.12) |
 | A-2 | EXP-01: baselines on the synthetic development dataset; first alert evaluation; confirmation of the working targets | E | Evelina | Nov 2026 | planned |
 | A-3 | EXP-02: candidate models (statsforecast, LightGBM) against baselines; censoring experiment (open question Q8) | E | Evelina | Dec 2026 | planned |
-| A-4 | Backend unit, API and database tests | T | Abzal | Nov 2026 → ongoing | planned (section 5) |
-| A-5 | CI workflow gating pull requests | I | Abzal | Nov 2026 | planned (section 5) |
-| A-6 | Integration scenario import → forecast run → risks, used as the January 2027 demo | T, D | Abzal, Evelina | Jan 2027 | planned (section 5) |
-| A-7 | Performance measurement NFR-01 (forecast run) and NFR-02 (page response) | M | Abzal, Evelina | Feb 2027 | planned (section 5) |
-| A-8 | Security and data-protection review NFR-03, NFR-04 | I, T | Abzal | Feb 2027 | planned (section 5) |
+| A-4 | Backend unit, API and database tests | T | Abzal | Nov 2026 → ongoing | in progress: scaffold tests exist (section 5.2) |
+| A-5 | CI workflow gating pull requests | I | Abzal | Oct 2026 → ongoing | in review (PHA2-22, section 5.4) |
+| A-6 | Integration scenario import → forecast run → risks, used as the January 2027 demo | T, D | Abzal, Evelina | Jan 2027 | planned (section 5.3) |
+| A-7 | Performance measurement NFR-01 (forecast run) and NFR-02 (page response) | M | Abzal, Evelina | Feb 2027 | planned (section 5.6) |
+| A-8 | Security and data-protection review NFR-03, NFR-04 | I, T | Abzal | Feb 2027 | planned (section 5.7) |
 | A-9 | EXP-03 … : tuning, final experiments on the final hold-out, error analysis | E | Evelina | Feb–Mar 2027 | planned |
-| A-10 | User testing with pharmacy staff | U | Birkhanym | Feb–Mar 2027 | planned (section 6) |
-| A-11 | Browser compatibility check NFR-09 | D | Birkhanym | Mar 2027 | planned (section 6) |
-| A-12 | Deployment walkthrough NFR-07 on a clean Linux machine | D, I | Abzal | Mar–Apr 2027 | planned (section 5) |
+| A-10 | User testing with pharmacy staff | U | Birkhanym | Pilot Jan 2027; sessions Feb–Mar 2027 | planned (section 6) |
+| A-11 | Browser compatibility check NFR-09 | D | Birkhanym | Feb–Mar 2027, during the sessions | planned (section 6.7) |
+| A-12 | Deployment walkthrough NFR-07 on a clean Linux machine | D, I | Abzal | Mar–Apr 2027 | planned (section 5.9) |
 | A-13 | Independent re-run of the final experiment by another team member (NFR-05) | E | Abzal or Birkhanym | Apr 2027 | planned |
+| A-14 | Mockup walkthrough with prospective participants | D | Birkhanym | Nov 2026 | planned (section 6.2) |
 
 ## 4. Forecasting evaluation
 
@@ -166,7 +171,7 @@ Why rolling origins rather than a single split: with 20–30 items a single 12-w
 
 #### 4.5.1 Baselines (FQ-05)
 
-All five baselines are mandatory in every comparison (FR-16-S4). They are implemented in `forecasting/forecasting/models/baselines.py` and tested in `forecasting/tests/test_baselines.py` (planned).
+All five baselines are mandatory in every comparison (FR-16-S4). They are implemented in `forecasting/forecasting/models/baselines.py` and tested in `forecasting/tests/test_baselines.py` (done, PHA2-16).
 
 | Name | Forecast for every horizon week | Parameters | Notes |
 |---|---|---|---|
@@ -272,7 +277,7 @@ Caveat: in the synthetic data every stock-out is caused by a modelled delivery d
 | Seeds | `seed = 42` by default (FQ-11). numpy `default_rng(seed)`; LightGBM with `seed`, `deterministic = true` and a fixed `num_threads`; statsforecast models are deterministic. A run with a different seed is a different experiment and says so in its identifier |
 | Reproducibility check | Every reported experiment is run twice on the same machine before it is reported; metric and forecast files must be equal to at least six decimal places (NFR-05-S1). The final experiment is additionally re-run by another team member from a clean checkout (activity A-13) |
 | Development hardware | Team laptops; CPU, RAM and OS are recorded in `metadata.json` so that run times in reports can be interpreted |
-| Reference machine for NFR-01 | A Linux virtual machine with 4 vCPU and 8 GB RAM (to be provisioned by Abzal in February 2027; cloud or local virtualisation). Measured value: wall-clock time of a complete forecast run started through `POST /api/v1/forecast-runs` on the performance set (1,000 items × 156 weeks, 12-week horizon, production model configuration), from `forecast_run.started_at` to `finished_at`. Three repetitions; the median and the maximum are reported; the maximum must be within 5 minutes (E-06). Baselines alone are measured first as a lower bound |
+| Reference machine for NFR-01 | A Linux virtual machine with 4 vCPU and 8 GB RAM (to be provisioned by Abzal in February 2027; cloud or local virtualisation). Measured value: wall-clock time of a complete forecast run started through `POST /api/v1/forecast-runs` on the performance set (1,000 items × 156 weeks, 12-week horizon, production model configuration), from `forecast_run.started_at` to `finished_at`. Three repetitions; the median and the maximum are reported; the maximum must be within 5 minutes (E-06). Baselines alone are measured first as a lower bound. The procedure is detailed in section 5.6 |
 | Data | Dataset identifier and the checksums of the input files recorded in `metadata.json` |
 | Synthetic vs real | Every table and figure states which dataset it was produced on; synthetic results are labelled "synthetic" and are never mixed with real results in one table |
 
@@ -296,14 +301,14 @@ A target that is not met is reported as not met, with the error analysis of sect
 
 Every experiment follows the same six steps. Nothing is reported that did not go through them.
 
-1. **Register.** Create a task in Linear (PHA2-n) and a configuration file `forecasting/experiments/EXP-<nn>-<slug>.yaml`. `EXP-nn` is a running number; the file is the single definition of the experiment (dataset, split, censoring method, models and parameters, seed, interval level).
+1. **Register.** Create a task in Linear (PHA2-n) and a configuration file `forecasting/experiments/configs/EXP-<nn>-<slug>.yaml` (the baseline comparison of the current runner uses `configs/baselines.yaml`). `EXP-nn` is a running number; the file is the single definition of the experiment (dataset, split, censoring method, models and parameters, seed, interval level).
 2. **Data.** Generate or locate the dataset by its identifier; record the generator command and the file checksums. Real data, if available, stay outside the repository and are referenced by identifier only.
-3. **Run.** Execute the single documented command (planned entry point `python -m forecasting.experiments.run <config>`; the exact command is maintained in `forecasting/README.md` once implemented). The run validates the input (NFR-06), refuses a configuration that omits a baseline (FR-16-S4), fits every model at every origin and writes the results directory. No manual step is allowed between the command and the result files (NFR-05-S3).
+3. **Run.** Execute the single documented command. The current runner (task PHA2-24, in review) is `python forecasting/experiments/run_baselines.py --config forecasting/experiments/configs/<name>.yaml [--out <directory>]`; a generic entry point `python -m forecasting.experiments.run <config>` for the candidate models is planned, and the exact command is maintained in `forecasting/experiments/README.md`. The run validates the input (NFR-06), refuses a configuration that omits a baseline (FR-16-S4), fits every model at every origin and writes the results directory. No manual step is allowed between the command and the result files (NFR-05-S3).
 4. **Repeat.** Run the command a second time and compare the result files (NFR-05-S1). A difference is a defect, not a result.
 5. **Report.** Write `forecasting/experiments/reports/EXP-<nn>.md` from the template in section 4.10, with the tables copied from the result files and the error analysis of section 4.11.
 6. **Review.** Another team member reviews the report in the pull request; decisions taken from the experiment (model choice, censoring method, confirmed targets) are recorded in the report and, where they change this plan, in its revision history.
 
-Configuration example (sample dataset, baselines and one candidate model):
+Configuration example (sample dataset, baselines and one candidate model). The keys `experiment`, `task`, `dataset.id`, `dataset.path`, `split.horizon_weeks`, `censoring_method`, `min_history_weeks`, `seed` and `models` are those of the current runner (`configs/baselines.yaml`, which places the origins with `split.n_windows` and `split.min_train_weeks` and refuses a configuration without all baselines through `require_all_baselines`); `generator_args`, explicit `split.origins`, `validation_weeks`, `interval_level`, the candidate model and the `alerts` block are the target format for the candidate-model experiments and are added with them:
 
 ```yaml
 experiment: EXP-01-baselines
@@ -339,21 +344,22 @@ alerts:
   safety_stock_weeks: 1
 ```
 
-Results directory (planned layout) `forecasting/experiments/results/EXP-<nn>/<run-timestamp>/`:
+Results directory. The current runner (PHA2-24) writes `forecasting/experiments/results/<experiment>-<run-timestamp>/` (UTC timestamp; a directory name can be chosen with `--out` for local work) with three files: `config.yaml`, a verbatim copy of the configuration; `metrics.json`, with the run identification, package versions, dataset summary, the windows actually used and `mae`, `wape`, `bias`, `n_weeks`, `censored_weeks` and `n_items` per model overall, per demand class and per origin; and `predictions.csv`, one row per model, origin, item and test week. The target layout for the candidate-model experiments keeps the same directory rule and adds the files marked "target" below when the first candidate model is compared (PHA2-27); until then the tables of section 4.10 are read from `metrics.json`.
 
 | File | Content |
 |---|---|
-| `config.yaml` | Copy of the configuration used |
-| `metadata.json` | Configuration hash, git commit, dataset identifier and checksums, start and end time, machine description, versions of Python, pandas, numpy, scikit-learn, statsforecast and LightGBM (NFR-05-S2) |
-| `metrics_overall.csv` | One row per model and origin: `mae`, `wape`, `bias`, `censored_weeks`, `items_evaluated`, `items_insufficient_history`, test window dates (FR-16-S1) |
-| `metrics_by_group.csv` | Same per medicine group and per demand class |
-| `metrics_by_item.csv` | Same per item, with `demand_class` and `censored_weeks` |
-| `metrics_by_horizon.csv` | MAE per horizon step |
-| `alerts.csv` | Per model, origin and variant: TP, FP, FN, TN, precision, recall, F1, timing error |
-| `forecasts.csv` | `model`, `origin`, `item_code`, `period_start`, `point`, `lower`, `upper` |
-| `figures/` | Residual and example plots used in the report |
+| `config.yaml` | Copy of the configuration used (current runner) |
+| `metrics.json` | Metrics per model overall, per demand class and per origin; windows, dataset summary, diagnostics (current runner) |
+| `predictions.csv` | `model`, `origin`, `item_code`, `demand_class`, `period_start`, `horizon_step`, `actual`, `is_censored`, `point` (current runner); `lower` and `upper` once intervals are produced (FQ-07) |
+| `metadata.json` | Configuration hash, git commit, dataset identifier and checksums, start and end time, machine description, versions of Python, pandas, numpy, scikit-learn, statsforecast and LightGBM (NFR-05-S2); target, partly covered today by the `run` block of `metrics.json` |
+| `metrics_overall.csv` | One row per model and origin: `mae`, `wape`, `bias`, `censored_weeks`, `items_evaluated`, `items_insufficient_history`, test window dates (FR-16-S1); target |
+| `metrics_by_group.csv` | Same per medicine group and per demand class; target |
+| `metrics_by_item.csv` | Same per item, with `demand_class` and `censored_weeks`; target |
+| `metrics_by_horizon.csv` | MAE per horizon step; target |
+| `alerts.csv` | Per model, origin and variant: TP, FP, FN, TN, precision, recall, F1, timing error; target (alert replay, FQ-15) |
+| `figures/` | Residual and example plots used in the report; target |
 
-Metric files and `metadata.json` are committed; `forecasts.csv` is committed only for the sample dataset (larger forecast files are excluded through `.gitignore` and rebuilt by the command).
+Run directories are not committed (`forecasting/experiments/results/README.md`; the ignore rule for `results/*/` is added with PHA2-24): a run is rebuilt by the command from its configuration file and dataset identifier, and only the summary tables enter the repository, copied into the experiment report together with the run id and the name of the configuration file.
 
 ### 4.10 Reporting template
 
@@ -410,25 +416,216 @@ The findings feed back into feature engineering, model selection, the censoring 
 
 ### 4.12 Forecasting module tests (NFR-06, FR-16, FR-17, NFR-05)
 
-Automated tests of the module live in `forecasting/tests/` and run in CI on every pull request. The mapping FQ → test file is maintained in `forecasting/README.md`; the planned files are:
+Automated tests of the module live in `forecasting/tests/` and run in CI on every pull request. The mapping FQ → test file is maintained in `forecasting/README.md`; the files and their status on 2026-10-20 are:
 
 | File | Scenarios covered | Status |
 |---|---|---|
-| `test_validation.py` | NFR-06-S1 … S8 (missing column, invalid quantity, period not Monday, duplicate period, gap, invalid horizon, all problems reported) | planned |
-| `test_schema.py` | Series construction from the import formats; `is_stock_out` propagation (FR-17-S2) | planned |
-| `test_baselines.py` | Hand-computed forecasts of the five baselines; fallbacks of FQ-04 | planned |
-| `test_metrics.py` | MAE, WAPE (`None` on zero sum), bias, pooled aggregation; FR-16-S2, FR-16-S3 | planned |
-| `test_split.py` | Origins, window boundaries, no data from or after the origin in features (FQ-09) | planned |
+| `test_validation.py` | NFR-06-S1 … S8 (missing column, invalid quantity, period not Monday, duplicate period, gap, invalid horizon, all problems reported) | partly done (PHA2-16): S1 … S4 and S7 covered (missing column, invalid quantity, period not Monday, duplicate period, combined reporting). S5 and S6 differ from the requirement text and are not covered as written: the module fills a missing week with zero and flags it in `is_filled` (`make_regular_weekly`) instead of raising `ValidationError` with `kind = "gap"`, and an out-of-range horizon raises `ValueError` from `ForecastConfig` (tested in `test_api.py`) instead of `ValidationError` with `kind = "invalid_horizon"`; the requirements (NFR-06-S5, NFR-06-S6, FQ-12) or the module are to be aligned, see FQ-02 on where gap filling belongs. S8 is the backend mapping and belongs to `backend/tests/test_forecast_runs.py` (section 5.2) |
+| `test_schema.py` | Series construction from the import formats; `is_stock_out` propagation (FR-17-S2) | planned; series construction (`make_regular_weekly`, `is_stock_out` typing) is currently covered in `test_validation.py` |
+| `test_baselines.py` | Hand-computed forecasts of the five baselines; fallbacks of FQ-04 | done (PHA2-16) |
+| `test_metrics.py` | MAE, WAPE (`None` on zero sum), bias, pooled aggregation; FR-16-S2, FR-16-S3 | done (PHA2-16) |
+| `test_split.py` | Origins, window boundaries, no data from or after the origin in features (FQ-09) | done (PHA2-16) |
 | `test_censoring.py` | FR-17-S3, FR-17-S4; the three censoring methods | planned |
 | `test_alerts.py` | Replay of FR-08-S1 … S3 numbers in `evaluation/alerts.py`; confusion-matrix arithmetic | planned |
-| `test_api.py` | `forecast_items` contract of FQ-13: output columns, `point ≥ 0`, `lower ≥ 0`, `upper ≥ point`, model name and flags per item (FQ-07) | planned |
+| `test_api.py` | `forecast_items` contract of FQ-13: output columns, `point ≥ 0`, `lower ≥ 0`, `upper ≥ point`, model name and flags per item (FQ-07) | done (PHA2-16) for output columns, `point ≥ 0`, sorting, model name and fallback flag, censored-week count and input rejection; `lower` and `upper` to be added with the intervals (FQ-07) |
 | `test_reproducibility.py` | Two calls with the same seed give identical results (NFR-05-S1 at unit level) | planned |
 
 Tests use small hand-written series (under 60 weeks) so that expected values can be verified by hand; the committed sample dataset is used only by a smoke test that runs the full pipeline once.
 
 ## 5. Backend and integration testing
 
-To be completed by Abzal Bakhytov (planned content: unit tests with pytest, API tests with the FastAPI TestClient, database tests, the integration scenario import → forecast run → risks, CI gating, test data strategy, performance checks for NFR-01 and NFR-02, security checks for NFR-03 and NFR-04, and the traceability table requirement → test type → status).
+Owner: Abzal Bakhytov. This section covers `backend/` (FastAPI service, PostgreSQL, REST API v1, imports, risk calculation, users, audit log) and the integration of the forecasting package into the backend. It implements method T for FR-01 … FR-15, FR-17, FR-18, the measurements for NFR-01 and NFR-02, the checks for NFR-03, NFR-04 and NFR-07, and the CI requirement NFR-08.
+
+Status on 2026-10-20: the backend is a runnable scaffold (task PHA2-3): application factory, settings, `GET /api/v1/health`, PostgreSQL 16 in Docker Compose, the SQLAlchemy session wiring, the models of the catalogue and the imported time series, and the Alembic setup. Three test files exist and pass locally (section 5.2); the CI workflow is in review (PHA2-22, section 5.4). Everything else in this section is planned.
+
+### 5.1 Test levels and tools
+
+| Level | Tool | Scope | Location | When it runs |
+|---|---|---|---|---|
+| Unit | pytest 8 | Functions and services without I/O: CSV/XLSX parsers and validators (FR-02), weekly series builder (FQ-02), risk calculation (FR-08), data-quality summary (FR-18), permission helpers, password hashing | `backend/tests/test_<area>.py`, one file per requirement area (section 5.2); test functions are named after the acceptance scenarios, for example `test_fr08_s1_high_risk` | Every pull request (CI) and locally with `pytest` from `backend/` |
+| API | FastAPI `TestClient` (httpx) against `create_app()` with `APP_ENVIRONMENT=test` | Every endpoint of REST API v1: status codes, response schemas (Pydantic), role enforcement, error mapping (400, 401, 403, 404, 422) | Same files as the unit tests of the area | Every pull request |
+| Database | SQLAlchemy 2.x; SQLite in memory for mapping and constraint tests (as in the existing `test_models.py`); PostgreSQL 16 for migrations, JSON columns, ordering and index behaviour | Alembic `upgrade head` → `downgrade base` → `upgrade head` on an empty database; constraints and enums of every entity; queries that back the risk list and the item history | `backend/tests/test_models.py`, `backend/tests/test_migrations.py` (planned) | Locally against `docker compose up -d db`; in CI once the PostgreSQL service container is added to `backend-tests` (planned, section 5.4) |
+| Integration | `TestClient` + PostgreSQL + the forecasting package installed in the same environment | The scenario of section 5.3 end to end, including the failure paths | `backend/tests/test_integration_flow.py` (planned), marker `integration` | Every pull request; must stay under one minute on the sample dataset |
+| Performance | pytest + httpx, marker `perf` | Section 5.6 | `backend/tests/perf/` (planned) | Manually and before each pre-defense; excluded from the default CI run |
+| Frontend | Vitest unit tests of the Vite scaffold (API client, Pinia store), in review (PHA2-23); component tests of the main screens later; Vite build and `npm test` in CI planned (section 5.4) | Main screens (dashboard, risk list, item page, import page) | `frontend/src/**/*.test.ts` (Birkhanym) | Locally with `npm test`; in CI once the `frontend` job exists |
+
+Shared fixtures (`backend/tests/conftest.py`, planned): `app`, `client`, `db_session` (one transaction per test, rolled back afterwards), `admin_token`, `pharmacist_token`, `viewer_token` (users created in the test database), and `sample_files` (paths of `forecasting/data/sample/`). The test database is `pharmastock_test`, taken from `DATABASE_URL` of the test environment; tests never run against the development database.
+
+### 5.2 Test files and status
+
+| File | Requirements / scenarios | Status (2026-10-20) |
+|---|---|---|
+| `test_health.py` | `GET /api/v1/health` returns 200 with name, version and environment | done |
+| `test_session.py` | Engine and session factory built from `DATABASE_URL`; `get_db` yields and closes a session | done |
+| `test_models.py` | Tables, constraints and enums of `medicine_item`, `supplier`, `item_supplier`, `import_batch`, `consumption_record`, `stock_snapshot`, `receipt`, `planned_receipt` (SQLite) | done |
+| `test_migrations.py` | Alembic upgrade/downgrade on PostgreSQL; schema equals the models | planned (with the first migration) |
+| `test_imports.py` | FR-01 (all four file types, CSV and XLSX), FR-17-S1 (flag on import) | planned |
+| `test_import_validation.py` | FR-02: missing columns, negative quantities, unknown items, duplicate periods; failed batch leaves no partial rows | planned |
+| `test_import_summary.py` | FR-18-S1 … S4 | planned |
+| `test_items.py` | FR-03; `GET/POST /api/v1/items`; `GET /api/v1/items/{id}/history` | planned |
+| `test_suppliers.py` | FR-04; lead time per item and primary supplier | planned |
+| `test_planned_receipts.py` | FR-10; statuses `planned`, `received`, `cancelled` | planned |
+| `test_forecast_runs.py` | FR-06; `POST/GET /api/v1/forecast-runs`; background execution; NFR-06-S8 (failed run) ; NFR-05-S4 (identical repeat) | planned |
+| `test_forecast_views.py` | FR-07; `GET /api/v1/items/{id}/forecast` with history, point, interval, model information | planned |
+| `test_risk.py` | FR-08-S1 … S6; the numbers of FR-08-S1 and FR-08-S2 are shared with `forecasting/tests/test_alerts.py` | planned |
+| `test_risks_list.py` | FR-09-S1 … S5; `GET /api/v1/risks?level=` | planned |
+| `test_thresholds.py` | FR-11; `GET/PUT /api/v1/config/thresholds`; recalculation after a change (UC-08 A4) | planned (criteria to be added to the requirements) |
+| `test_notifications.py` | FR-12; one notification per user and high-risk item; `GET /api/v1/notifications`; mark as read (`POST /api/v1/notifications/{id}/read`, proposed in `docs/architecture/api-contract.md` section 6, not part of the v1 draft) | planned (criteria to be added) |
+| `test_reports.py` | FR-13; `GET /api/v1/reports/risks.csv`; XLSX export | planned (criteria to be added) |
+| `test_auth.py` | FR-14, NFR-03: login, token expiry, role matrix (section 5.7), password hashing | planned |
+| `test_audit_log.py` | FR-15: entries for imports, forecast runs, configuration changes, user management | planned |
+| `test_integration_flow.py` | Section 5.3 | planned |
+| `perf/test_response_times.py` | NFR-02 (section 5.6) | planned |
+
+### 5.3 Integration scenario: import → forecast run → risks
+
+Purpose: success criterion S-03 of the proposal (the prototype works end to end), the scripted demo for the January 2027 integration demo (activity A-6), and the regression test that guards the whole chain afterwards. Data: the committed synthetic sample (20 items × 104 weeks) and its catalogue file `forecasting/data/sample/items.csv`. The reference counts come from `forecasting/data/sample/dataset.json` and are read from that file in the test, so that regenerating the sample with the same arguments keeps the test valid.
+
+| Step | Action (API) | Expected result (assertion) | Requirements |
+|---|---|---|---|
+| IT-01 | `POST /api/v1/auth/login` for the pharmacist, the administrator and the viewer | 200 with a bearer token for each; wrong password → 401 | FR-14 |
+| IT-02 | `POST /api/v1/items` as pharmacist, one call per row of `forecasting/data/sample/items.csv` (`code`, `name`, `unit`, `group`, `is_active`); the supplier and `lead_time_days` of each row are then recorded through the supplier endpoints proposed in `docs/architecture/api-contract.md` section 6 (`POST /api/v1/suppliers`, `PUT /api/v1/items/{id}/suppliers`) or, until they exist, written by the test fixture into `supplier` and `item_supplier` | 201 per item; 20 active `medicine_item` rows; `GET /api/v1/items` lists all 20; one `item_supplier` row per item with `is_primary = true` and the lead time of the file; a repeated code → `409 ITEM_CODE_EXISTS` | FR-03, FR-04 |
+| IT-03 | `POST /api/v1/imports` with `consumption.csv` (source type consumption) as pharmacist | Batch created; `GET /api/v1/imports/{id}` → `status = completed`; `summary_json`: `rows_imported = 2080`, `items_affected = 20`, `period_from = 2024-10-21`, `period_to = 2026-10-12`, `weeks_total = 104`; all 2080 rows accepted and no `unknown_item` error, because every code was created in IT-02 (unknown codes are rejected: FR-02, FR-01-S1, rule V-05 of `docs/data/data-specification.md`; the import option `create_items` is only planned, open question Q2) | FR-01, FR-18 |
+| IT-04 | Import `stock.csv` | `status = completed`; `stock_out_weeks = 78`, `items_with_stock_out = 14`; `stock_snapshot.is_stock_out = true` exactly for rows with `quantity_on_hand = 0` | FR-01, FR-17-S1, FR-18-S4 |
+| IT-05 | Import `receipts.csv` and `planned_receipts.csv` | 330 `receipt` rows; 18 `planned_receipt` rows with `status = planned`; every row linked to the `supplier` recorded in IT-02 whose name matches the file (the v1 contract rejects an unknown supplier name with `unknown_supplier`; automatic creation is open question Q-2 of the data specification) | FR-01, FR-04, FR-10 |
+| IT-06 | `POST /api/v1/forecast-runs` with `horizon_weeks = 12` for all items | 202 with the run id and `status = queued`; polling `GET /api/v1/forecast-runs/{id}` ends with `status = completed` (the job runner executes synchronously in tests); 20 × 12 = 240 `forecast` rows; every row has `point ≥ 0`, `lower ≥ 0`, `upper ≥ point`; `config_json` holds model name, seed and censoring method | FR-06, FQ-07, FQ-11 |
+| IT-07 | `GET /api/v1/risks` | 20 `risk_assessment` rows (every item has stock data), ordered High → Medium → Low and by expected stock-out date; `expected_stockout_date` is `null` only for Low; `GET /api/v1/risks?level=high` returns the High subset; `?level=urgent` → 400 | FR-08, FR-09-S1 … S3 |
+| IT-08 | `GET /api/v1/items/{id}/history` and `GET /api/v1/items/{id}/forecast` for one High item | 104 history weeks with the `is_stock_out` flags; 12 forecast rows, model name, projected stock series | FR-05, FR-07, FR-17 |
+| IT-09 | `GET /api/v1/notifications` as pharmacist and as viewer | One unread notification per High item for each user; marking one as read sets `read_at` (through `POST /api/v1/notifications/{id}/read`, an endpoint proposed in `docs/architecture/api-contract.md` section 6 and not part of the v1 draft) | FR-12 |
+| IT-10 | `GET /api/v1/reports/risks.csv` | CSV with a header row and one row per assessment; the same filter as the risk list | FR-13 |
+| IT-11 | Read `audit_log` | Entries for the four completed imports and `forecast_run.completed`, each with the acting user id | FR-15 |
+| IT-12 | `POST /api/v1/imports` and `POST /api/v1/forecast-runs` as viewer; any endpoint without a token | 403 for the viewer; 401 without a token | FR-14, NFR-03 |
+| IT-13 | Import a consumption file with a negative quantity and a missing column; then import a receipts file whose `item_code` is not in the catalogue (FR-02-S3) | Each batch `status = failed` with its error list; no `consumption_record` or `receipt` rows added; the summary names the problems, and the unknown code is reported with the row, the column `item_code` and the value (`unknown_item`) | FR-02 |
+| IT-14 | Start a run whose history fails the forecasting validation (a series with a gap introduced through a test fixture) | `status = failed`, message lists the problems, no `forecast` or `risk_assessment` rows for the run, the previous run remains the default | NFR-06-S8 |
+| IT-15 | Start a second run with the `config_json` of IT-06 | `point`, `lower`, `upper` identical to the first run for every item and week | NFR-05-S4 |
+
+Exact counts per risk level are not asserted; they depend on the production model and are reported in the experiment results instead. The test asserts structure, counts, ordering and the failure paths.
+
+Demo version: the same steps performed in the web interface by Birkhanym (import page, forecast view, risk list, item page, notifications, export) with the API steps shown in the interactive API documentation at `/docs`; the supervisor's feedback is recorded in `docs/supervision/feedback-log.md`.
+
+### 5.4 CI gating (NFR-08)
+
+Workflow `.github/workflows/ci.yml` (task PHA2-22, in review; described in `docs/project-management/ci.md`) runs on every pull request and on every push to `main`. A new push to the same branch cancels the run still in progress.
+
+| Job | Steps | Gate |
+|---|---|---|
+| `backend-tests` | Ubuntu runner, Python 3.12; in `backend/`: `pip install -e ".[dev]"`, `pytest -q`; the tests use SQLite in memory, so no database service is started | Required status check |
+| `forecasting-tests` | Ubuntu runner, Python 3.12; in `forecasting/`: `pip install -e ".[dev]"`, `pytest -q` | Required status check |
+| `lint` | `pip install ruff`; `ruff check backend/ forecasting/` with the default rule set; `continue-on-error: true` | Advisory: the result is shown in the run and does not block the merge |
+
+Planned extensions, added with the tasks that need them:
+
+| Extension | Needed by | Status |
+|---|---|---|
+| PostgreSQL 16 service container with the test database and `alembic upgrade head` in `backend-tests` | `test_migrations.py` and the PostgreSQL-specific tests of section 5.1 | planned (`ci.md`, section 6) |
+| Installation of `forecasting/` in `backend-tests` and the marker exclusion `pytest -m "not perf"` | Integration test IT-01 … IT-15; `backend/tests/perf/` | planned, together with those tests |
+| `frontend` job: Node LTS, `npm ci`, `npm run build`, `npm test` (Vitest) | `frontend/` (PHA2-23, in review) | planned; required status check once added |
+| Coverage with `pytest-cov` as a workflow artifact for `backend/app` and `forecasting/forecasting` | Working target 80 % line coverage; informational until pre-defense 2, after which the team decides whether to make it a gate | planned |
+| `lint` as a required check | A shared `[tool.ruff]` configuration in both `pyproject.toml` files and the current findings fixed | planned follow-up (`ci.md`, section 2.3) |
+
+Rules:
+
+- Branch protection on `main` lists `backend-tests` and `forecasting-tests` as required checks (configured by the repository owner after the first run of the workflow on `main`); a pull request cannot be merged while a required check is red or missing, in addition to the review rule of `CONTRIBUTING.md` (one approving review by another team member).
+- Time budget: each job under 10 minutes (`timeout-minutes: 15` is the hard limit in the workflow); the integration test under one minute. Performance tests (`perf` marker) never run in CI.
+- A failing test on `main` is treated as the highest-priority task until `main` is green again.
+- Lint findings are reviewed but do not gate merges until the follow-up above is done; style checks are not part of NFR-08.
+
+### 5.5 Test data strategy
+
+| Tier | Data | Use | Location |
+|---|---|---|---|
+| 1 | Hand-written minimal CSV/XLSX files (5–20 rows) for each validation case: missing column, negative quantity, unknown item, duplicate period, non-Monday date, outlier of FR-18-S2, stock-out row of FR-17-S1 | Unit and API tests of FR-01, FR-02, FR-17, FR-18 | `backend/tests/data/` (committed) |
+| 2 | The committed synthetic sample (20 items × 104 weeks, seed 42) with `dataset.json` as the source of reference counts | Integration scenario (section 5.3), demos | `forecasting/data/sample/` (committed) |
+| 3 | Generated sets of 1,000 and 5,000 items × 156 weeks (`generate_synthetic.py --items 1000 --weeks 156 --seed 42`, and `--items 5000`) | Performance measurements (section 5.6) | Generated inside the measurement job; never committed |
+
+Principles: no real data in tests or fixtures (NFR-04; real exports, if received, stay outside the repository); every test starts from an empty schema (migrations applied once per session, one rolled-back transaction per test; the integration test truncates between phases); expected values are derived from the fixture files or `dataset.json`, not typed into the tests twice; fixture users have placeholder names and e-mail addresses on a reserved test domain.
+
+### 5.6 Performance checks (NFR-01, NFR-02)
+
+**PERF-01 — forecast run time (NFR-01).** Owner of the machine and the API path: Abzal; owner of the measurement and its report: Evelina (section 4.7).
+
+1. Provision a Linux virtual machine with 4 vCPU and 8 GB RAM and deploy the full stack with `docker compose up` (also the first NFR-07 rehearsal).
+2. Generate the 1,000-item performance set and import the four files through the API; import durations are recorded as an informational figure.
+3. Start `POST /api/v1/forecast-runs` with the production model configuration and `horizon_weeks = 12`; read `started_at` and `finished_at` from `GET /api/v1/forecast-runs/{id}`.
+4. Repeat three times; record median and maximum, CPU and memory from `docker stats`, and the versions in use.
+5. Pass if the maximum is ≤ 300 s (E-06). If not: profile the three phases (history load, model fitting, insertion of forecast and risk rows), optimise, measure again. Working budget per phase: history load ≤ 30 s, forecasting ≤ 180 s, risk calculation and inserts ≤ 60 s.
+6. Write `forecasting/experiments/reports/PERF-01.md` with the machine description, the dataset identifier and all three timings.
+
+**PERF-02 — page response time (NFR-02).**
+
+1. Load the 5,000-item performance set into the same deployment.
+2. For each of `GET /api/v1/items` (page of 50), `GET /api/v1/items/{id}/history`, `GET /api/v1/items/{id}/forecast`, `GET /api/v1/risks`, `GET /api/v1/risks?level=high`, `GET /api/v1/notifications` and a dashboard summary endpoint, if one is added to the API contract: 5 warm-up requests, then 20 timed requests with httpx; record the 95th percentile.
+3. Measure the end-to-end load of the dashboard, the risk list and an item page in the browser developer tools (three loads each, median).
+4. Pass if every server-side p95 is ≤ 1 s (leaving one second for network and rendering) and every page load median is ≤ 2 s.
+5. The script is `backend/tests/perf/test_response_times.py` (marker `perf`); results go to `forecasting/experiments/reports/PERF-02.md`. Run before pre-defense 2 and before the final pre-defense.
+
+### 5.7 Security and data-protection checks (NFR-03, NFR-04)
+
+NFR-03 (role-based access control, hashed passwords, HTTPS):
+
+| Check | Method | Evidence |
+|---|---|---|
+| Role matrix: every endpoint × role (anonymous, viewer, pharmacist, administrator) → expected status (200/201/202, 401, 403) | T: one parametrised test generated from a table kept in `test_auth.py`; the same table is published in `docs/architecture/api-contract.md` | `backend/tests/test_auth.py` |
+| Password storage: `app_user.password_hash` holds a salted hash produced by the algorithm chosen for the backend (`docs/architecture/architecture.md` section 8.1 states only that passwords are stored as salted hashes; the algorithm decision is to be recorded there); the plaintext is never stored; verification succeeds for the right password and fails for a wrong or changed one | T | `test_auth.py` |
+| `password_hash` never appears in an API response | T: schema assertion on every user-returning endpoint | `test_auth.py`, `test_items.py` (user references) |
+| Tokens: signed with `SECRET_KEY`, expiry enforced; expired or tampered token → 401; application refuses to start with the placeholder `SECRET_KEY` when `APP_ENVIRONMENT = production` | T, I | `test_auth.py`; startup check in `app/core/config.py` |
+| HTTPS: TLS terminated by the reverse proxy in front of Docker Compose; HTTP redirected to HTTPS; the backend and database ports are not published outside the host | I, D: deployment checklist of section 5.9 | NFR-07 walkthrough record |
+| Secrets: `.env` is ignored by Git, `.env.example` contains placeholders only; no credentials in code, tests or CI logs | I: pull request review; CI uses repository secrets only for the test database | Pull requests |
+| Dependency vulnerabilities: `pip-audit` on backend and forecasting dependencies as a non-blocking CI step | I | CI logs (planned) |
+| Audit coverage: imports, forecast runs, configuration changes and user management write `audit_log` entries with the acting user | T | `test_audit_log.py` |
+
+NFR-04 (no patient personal data) — inspection checklist, signed off by Abzal and Evelina before pre-defense 2 and again before the final pre-defense; the sign-off is a row in the revision history of this plan:
+
+- [ ] No entity in `backend/app/db/models.py` and `docs/architecture/database-schema.md` carries patient attributes; the only personal data are the e-mail and full name of application users (`app_user`).
+- [ ] Import parsers accept only the columns of `docs/data/data-specification.md`; unknown columns are reported in the import summary and never stored.
+- [ ] The synthetic generator, the test fixtures and the user-testing materials contain no personal data.
+- [ ] Application logs do not print import file contents or request bodies.
+- [ ] Real data, if received, are stored outside the repository, under the conditions agreed with the organization, and are item-level exports only.
+
+### 5.8 Traceability: requirement → test type → status
+
+Status values: **done** (tests exist and pass), **in progress** (part of the evidence exists), **planned**. The evidence column matches section 7 of `docs/requirements.md`; both tables are updated together.
+
+| Requirement | Test type(s) | Evidence (file / activity) | Status (2026-10-20) |
+|---|---|---|---|
+| FR-01 Import consumption, stock and receipt data from CSV/XLSX files | Unit, API, integration (IT-03 … IT-05); demo | `test_imports.py`; `test_integration_flow.py` | in progress: entity models tested in `test_models.py`; parsers and endpoint planned |
+| FR-02 Validate imported data and report errors: missing columns, negative quantities, unknown items, duplicate periods | Unit, API (IT-13) | `test_import_validation.py` | planned |
+| FR-03 Maintain the medicine catalogue: code, name, unit, group, active flag | Unit, API, integration (IT-02); demo | `test_items.py` | in progress: `medicine_item` mapping tested in `test_models.py` |
+| FR-04 Maintain suppliers and lead times per item | Unit, API, integration (IT-02, IT-05) | `test_suppliers.py` | in progress: `supplier` and `item_supplier` mapping tested in `test_models.py` |
+| FR-05 View current stock and consumption history per item as table and chart | API (IT-08); demo; user testing | `test_items.py`; section 6 | planned |
+| FR-06 Run a forecast for all or selected items for a configurable horizon | API, integration (IT-06, IT-14); demo | `test_forecast_runs.py`; `forecasting/tests/test_api.py` | in progress: `forecasting/tests/test_api.py` done (PHA2-16); `test_forecast_runs.py` planned |
+| FR-07 View the forecast per item together with history, point forecast, interval and model information | API (IT-08); demo; user testing | `test_forecast_views.py`; section 6 | planned |
+| FR-08 Calculate shortage risk per item from forecast, current stock, planned receipts and lead time | Unit (FR-08-S1 … S6); experiment (section 4.6) | `test_risk.py`; `forecasting/tests/test_alerts.py` | planned |
+| FR-09 Show a prioritised list of items at risk with risk level and expected stock-out date | API (IT-07); demo; user testing | `test_risks_list.py`; section 6 | planned |
+| FR-10 Record planned deliveries (expected receipts) | Unit, API (IT-05) | `test_planned_receipts.py` | in progress: `planned_receipt` mapping and status enum tested in `test_models.py` |
+| FR-11 Configure risk thresholds and safety-stock parameters | API; demo | `test_thresholds.py` | planned; acceptance criteria to be added |
+| FR-12 Generate in-app notifications for high-risk items | API (IT-09); demo | `test_notifications.py` | planned; acceptance criteria to be added |
+| FR-13 Export forecast and risk reports to CSV/XLSX | API (IT-10); demo | `test_reports.py` | planned; acceptance criteria to be added |
+| FR-14 Authenticate users and manage roles: administrator, pharmacist, viewer | API (IT-01, IT-12); inspection | `test_auth.py`; section 5.7 | planned |
+| FR-15 Keep an audit log of imports, forecast runs and configuration changes | API (IT-11); inspection | `test_audit_log.py` | planned |
+| FR-16 Compare forecasting models against baselines on a hold-out period and show MAE and WAPE | Experiment; unit | `forecasting/experiments/` (runner `run_baselines.py`, PHA2-24 in review); `forecasting/tests/test_metrics.py`, `test_split.py` | in progress: `test_metrics.py` and `test_split.py` done (PHA2-16); EXP-01 planned (Nov 2026) |
+| FR-17 Flag stock-out periods so that zero consumption during a stock-out is treated as censored demand | Unit, API (IT-04); experiment | `test_imports.py`; `forecasting/tests/test_censoring.py`; EXP-02 | in progress: `stock_snapshot.is_stock_out` column tested in `test_models.py` |
+| FR-18 Show a data-quality summary per import: coverage, gaps, outliers | Unit, API (IT-03, IT-04); demo | `test_import_summary.py` | planned |
+| NFR-01 A forecast run for 1,000 items with 3 years of weekly history completes within 5 minutes on a 4 vCPU / 8 GB server | Measurement | PERF-01 (section 5.6) | planned (Feb 2027) |
+| NFR-02 Typical pages respond within 2 seconds with up to 5,000 items | Measurement | PERF-02 (section 5.6) | planned (Feb 2027) |
+| NFR-03 Role-based access control; passwords stored hashed; HTTPS in deployment | API; inspection; demo | `test_auth.py`; section 5.7; section 5.9 | planned |
+| NFR-04 No patient personal data is stored or processed | Inspection | Checklist of section 5.7 | in progress: schema review during PHA2-14/PHA2-3 |
+| NFR-05 Forecast experiments are reproducible: fixed seeds, versioned configurations, saved results | Unit; experiment; integration (IT-15) | `forecasting/tests/test_reproducibility.py`; repeat runs; `test_forecast_runs.py` | planned |
+| NFR-06 The forecasting module rejects malformed input with a clear error instead of producing a wrong forecast | Unit (NFR-06-S1 … S8); integration (IT-14) | `forecasting/tests/test_validation.py`; `test_forecast_runs.py` | in progress: `forecasting/tests/test_validation.py` covers S1 … S4 and S7 (PHA2-16; S5 and S6 differ from the requirement text, section 4.12); `test_forecast_runs.py` planned |
+| NFR-07 Deployable with Docker Compose on Linux with documented setup | Demo; inspection | Section 5.9 | in progress: `docker-compose.yml` with the `db` service exists; backend and frontend services planned |
+| NFR-08 Automated tests for backend and forecasting run in CI on every pull request | Inspection | `.github/workflows/ci.yml`; CI status on pull requests | in review (PHA2-22): `backend-tests` and `forecasting-tests` required, `lint` advisory; `frontend` job planned |
+| NFR-09 UI works in current Chrome, Firefox and Edge on desktop, responsive down to 1280 px | Demo during user testing | Section 6.7 | planned |
+| NFR-10 Interface in English first; Russian localisation planned | Inspection | Interface strings in message files | planned |
+
+### 5.9 Deployment check (NFR-07)
+
+Performed by Abzal on a clean Linux virtual machine (first rehearsal with PERF-01 in February 2027, final walkthrough in March–April 2027), following only the repository documentation (`README.md`, `backend/README.md`, `frontend/README.md`, `.env.example`):
+
+1. Clone the repository at the tagged commit; copy `.env.example` to `.env` and fill in the values.
+2. `docker compose up -d`; all three services report healthy; migrations applied on start.
+3. `GET /api/v1/health` returns 200 through the reverse proxy over HTTPS; HTTP is redirected; the database port is not reachable from outside the host.
+4. Log in, import the sample dataset, run a forecast, open the risk list and an item page in the browser.
+5. Record the elapsed time, every step that needed information not in the documentation, and the fixes made; the record goes to `docs/supervision/feedback-log.md` and the documentation is corrected in the same task.
 
 ## 6. User testing and UX evaluation
 
@@ -441,12 +638,12 @@ Aligned with `docs/project-management/plan-and-milestones.md`.
 | Period | Verification and evaluation activities | Deliverable |
 |---|---|---|
 | Oct 2026 | This plan (PHA2-19); synthetic sample dataset (PHA2-15); experiment plan agreed with the supervisor | Plan in the pre-defense-1 materials (tag `pre-defense-1`) |
-| Nov 2026 | Forecasting module tests (A-1); EXP-01 baselines and first alert evaluation (A-2); working targets confirmed; backend tests and CI start (A-4, A-5) | `EXP-01.md`; CI green on pull requests |
+| Nov 2026 | Forecasting module tests (A-1); EXP-01 baselines and first alert evaluation (A-2); working targets confirmed; backend tests and CI (A-4, A-5); mockup walkthrough (A-14) | `EXP-01.md`; CI green on pull requests; walkthrough findings in the interview log |
 | Dec 2026 | EXP-02 candidate models and censoring experiment (A-3); API tests for imports, items, forecast runs, risks | `EXP-02.md`; decision on the censoring method |
-| Jan 2027 | Integration scenario and end-to-end demo (A-6); backend run reproducibility (NFR-05-S4) | Demo recorded in `docs/supervision/feedback-log.md`; pre-defense-2 materials (tag `pre-defense-2`, date to be confirmed by the School) |
-| Feb 2027 | Tuning experiments (A-9); NFR-01 and NFR-02 measurements (A-7); security review (A-8); user-testing pilot and first sessions (A-10) | Performance report; tuning reports |
-| Mar 2027 | Final experiments on the final hold-out, comparison and error analysis (A-9); integration testing; user-testing sessions and report (A-10, A-11) | Final `EXP-nn.md`; `docs/ux/user-testing-report.md` |
-| Apr 2027 | Independent re-run of the final experiment (A-13); deployment walkthrough (A-12); results written into the thesis and the article | Evaluation chapter; deployed prototype |
+| Jan 2027 | Integration scenario and end-to-end demo (A-6); backend run reproducibility (NFR-05-S4); user-testing pilot (A-10) | Demo recorded in `docs/supervision/feedback-log.md`; pre-defense-2 materials (tag `pre-defense-2`, date to be confirmed by the School) |
+| Feb 2027 | Tuning experiments (A-9); PERF-01 and PERF-02 measurements (A-7); security review (A-8); first user-testing sessions (A-10, A-11) | Performance reports; tuning reports |
+| Mar 2027 | Final experiments on the final hold-out, comparison and error analysis (A-9); integration testing; remaining user-testing sessions and report (A-10, A-11); deployment rehearsal (A-12) | Final `EXP-nn.md`; `docs/ux/user-testing-report.md` |
+| Apr 2027 | Independent re-run of the final experiment (A-13); final deployment walkthrough (A-12); re-test of user-testing fixes; NFR-04 sign-off; results written into the thesis and the article | Evaluation chapter; deployed prototype |
 | May–Jun 2027 | Revisions after pre-defense feedback; final pre-defense (tag `final-pre-defense`) and defense | Final thesis |
 
 ## 8. Revision history
@@ -454,3 +651,6 @@ Aligned with `docs/project-management/plan-and-milestones.md`.
 | Date | Version | Author | Change |
 |---|---|---|---|
 | 2026-10-19 | 0.1 | Evelina Penkova | First version: purpose, conventions, overview of activities, forecasting evaluation design (sections 4.1–4.12), schedule; sections 5 and 6 reserved for their owners |
+| 2026-10-20 | 0.2 | Abzal Bakhytov, Birkhanym Kazhymukhamet | Section 5 "Backend and integration testing" (test levels, test files and status, integration scenario IT-01 … IT-14, CI gating, test data strategy, PERF-01/PERF-02, security and NFR-04 checklist, traceability table, deployment check); section 6 "User testing and UX evaluation" (two stages, participants, tasks UT-01 … UT-10, metrics, acceptance criteria, procedure, reporting, schedule); overview of activities and schedule updated |
+| 2026-10-20 | 0.2.1 | Evelina Penkova | Statuses aligned with the merged forecasting package (PHA2-16) and the tasks in review (PHA2-22 CI workflow, PHA2-23 frontend scaffold, PHA2-24 experiment runner); run command and results layout of section 4.9 aligned with `forecasting/experiments/README.md`; FR-17-S3 check and the minimum dataset length of section 4.4 corrected |
+| 2026-10-20 | 0.2.2 | Evelina Penkova | Review fixes: catalogue step IT-02 inserted before the first import so that the integration scenario follows FR-02, FR-01-S1 and rule V-05 (unknown item codes are rejected, no automatic creation), later steps renumbered IT-03 … IT-15 and the unknown-item case added to IT-13; coverage of NFR-06-S5 and S6 by the merged package stated in section 4.12; notification read endpoint and password-hash decision marked as proposed / to be recorded (sections 5.2, 5.3, 5.7); recruitment reference of section 6.3 corrected |
