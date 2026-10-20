@@ -629,7 +629,103 @@ Performed by Abzal on a clean Linux virtual machine (first rehearsal with PERF-0
 
 ## 6. User testing and UX evaluation
 
-To be completed by Birkhanym Kazhymukhamet (planned content: scenario-based usability sessions with 3–5 pharmacy staff, task list mapped to the user scenarios, metrics (task completion, time on task, SUS questionnaire, error count), acceptance criteria for FR-05, FR-07 and FR-09, schedule after prototype integration in February–March 2027).
+Owner: Birkhanym Kazhymukhamet. This section implements success criterion S-06 of the proposal, method U for FR-05, FR-07 and FR-09, and method D for NFR-09. Status on 2026-10-20: planned; no session has been held. The tasks and criteria below will be adjusted after the stakeholder discussions D-1 … D-5 of the evidence-of-relevance work and after the mockup walkthrough, and the revision history records the changes.
+
+### 6.1 Goals and questions
+
+| # | Question | Answered by |
+|---|---|---|
+| U-A | Can target users complete the main scenarios on the prototype without help from the team? | Task completion and time on task (section 6.5) |
+| U-B | Are the forecast, its interval, the stock-out marking and the risk levels understood correctly, not only clicked through? | Comprehension checks in UT-03 and UT-04 |
+| U-C | Which usability problems must be fixed before the final pre-defense? | Issue list with severity (section 6.8) |
+| U-D | Does the interface work in the browsers and at the screen width required by NFR-09? | Browser checks during the sessions (section 6.7) |
+
+Out of scope: measuring the effect of the system on the number of shortages or on stock value. This needs months of operational use and is stated in the thesis as future work.
+
+### 6.2 Two stages
+
+| Stage | When | What | Output |
+|---|---|---|---|
+| 1. Mockup walkthrough (activity A-14) | November 2026, after discussions D-1 … D-3 have taken place | The static mockups in `prototype/` (dashboard, risk list, item page, import, thresholds) are shown to two or three prospective participants at the end of their discussion; think-aloud; no timing | Findings recorded in `docs/evidence-of-relevance/interview-log.md` as verified findings or assumptions; changes to the mockups before the Vue implementation |
+| 2. Usability sessions (activity A-10) | Pilot in January 2027 after the integration demo; sessions in February–March 2027 | Moderated scenario-based sessions on the integrated prototype (sections 6.3 … 6.9) | `docs/ux/user-testing-report.md` |
+
+### 6.3 Participants
+
+- **Number and roles:** three to five pharmacy staff: a head of hospital pharmacy (1), pharmacists (1–2), a procurement and supply specialist (1) and, if available, a head of a clinical department as a `viewer` (1). Participants are referred to as P-1 … P-5.
+- **Recruitment:** through the organizations of discussions D-1 … D-5 (register in `docs/evidence-of-relevance/interview-log.md`, time plan in `interview-guide.md` section 5; contacts in `docs/evidence-of-relevance/stakeholders.md`). If fewer than three participants can be recruited, the sessions run with those available plus students of the School as proxy users, and the report states this limitation.
+- **Consent and personal data:** as in section 7 of the interview guide — participation is voluntary, no names or organization names are recorded, no audio or video is recorded unless the participant agrees, notes only. A short role questionnaire (role, years in the role, tools used today: spreadsheet, accounting system, other) is the only background information kept.
+- **Pilot:** one session with a team member who does not work on the frontend (Evelina or Abzal) before P-1, to calibrate the script, the reference times and the answer keys.
+
+### 6.4 Task list
+
+Tasks are given one at a time on a card, in the order below; the moderator does not intervene unless the participant has been stuck for two minutes (the task is then "assisted"). Reference times are working values from the plan and are replaced by the pilot's measurements.
+
+| ID | Task as given to the participant | Scenario / use case | Requirements | Success condition | Reference time |
+|---|---|---|---|---|---|
+| UT-01 | "Log in with the account on your card. How many items are at High risk today, and when was the last forecast run?" | S-01 step 1; UC-08 | FR-14, FR-09 | Both values read correctly from the dashboard | 2 min |
+| UT-02 | "Find the High-risk item that will run out first. Name the item and the week it is expected to run out." | S-01 steps 2–3; UC-08 | FR-09 | Correct item and date | 2 min |
+| UT-03 | "Open that item. In the last year, which weeks had nothing on the shelf? What is the forecast for the next four weeks, and what does the shaded band around it mean?" | S-01 step 3; UC-05, UC-07 | FR-05, FR-07, FR-17 | Stock-out weeks identified from the marking; point forecast read; interval explained in the participant's own words (answer key: a range the real value is expected to fall in) | 5 min |
+| UT-04 | "Which method produced this forecast, and was it better or worse than the simple methods?" | UC-07 | FR-07, FR-16 | Model name found; the comparison (MAE, WAPE) read as better/worse correctly | 2 min |
+| UT-05 | "Import the file `consumption.csv` from the folder on the desktop. How many rows were imported, and is there anything you would check?" | S-02; UC-01, UC-02 | FR-01, FR-02, FR-18 | Import completed; row count and at least one warning (gaps, outliers or stock-out weeks) named | 5 min |
+| UT-06 | "Run a new forecast for all items and show us where the result appears." | S-01 step 4; UC-06 | FR-06 | Run started and completed; participant finds the refreshed risk list | 3 min |
+| UT-07 | "A delivery of 200 units of the item on your card is confirmed for the date on the card. Record it and tell us what happened to the item's risk." | S-04; UC-09 | FR-10, FR-08 | Planned receipt saved; new risk level or date stated | 4 min |
+| UT-08 | "Export the list of High-risk items to send to procurement." | S-03 step 4; UC-12 | FR-13 | File downloaded with the filtered rows | 2 min |
+| UT-09 (head of pharmacy only) | "Change the safety stock to two weeks and check that the change was recorded." | S-05; UC-10, UC-14 | FR-11, FR-15 | Setting saved; audit entry found | 4 min |
+| UT-10 (viewer only) | "Try to start a forecast run." | S-03 step 6 | FR-14 | Participant recognises that the action is not available for the role and says so | 1 min |
+
+Every card for UT-07 names a different High-risk item of the synthetic dataset so that participants do not share answers. Item names in the synthetic dataset are illustrative; participants are told so at the start.
+
+### 6.5 Metrics
+
+| Metric | Definition | Collected by |
+|---|---|---|
+| Task completion | Per task and participant: **unassisted**, **assisted** (moderator intervened after two minutes) or **failed** (wrong answer or abandoned). Completion rate = unassisted ÷ all attempts | Note-taker |
+| Time on task | From the moment the card is read to the moment the answer is stated; median per task compared with the pilot's reference time | Note-taker, stopwatch |
+| Error count | Per task: navigation to a wrong page, a wrong value entered or a wrong answer stated and then corrected, a misread chart or flag. Counted with a timestamp so that the issue can be located | Note-taker |
+| Comprehension | UT-03 and UT-04 answers scored correct / partly correct / incorrect against the answer key | Moderator, after the session |
+| SUS | The ten-statement System Usability Scale after the tasks, scored 0–100 with the standard rule; reported per participant and as the mean. With three to five participants the mean is indicative, not a population estimate | Participant, paper or online form |
+| Open questions | "What was most useful?", "What was most confusing?", "What is missing for your work?" | Moderator |
+| Issues | Every observed problem with a severity: 1 cosmetic, 2 minor (slows the task), 3 major (task completed only with effort or help), 4 blocking (task failed) | Moderator and note-taker, consolidated after the session |
+
+### 6.6 Acceptance criteria (working values, to be confirmed after the pilot)
+
+| Requirement | Task(s) | Criterion |
+|---|---|---|
+| FR-09 Show a prioritised list of items at risk with risk level and expected stock-out date | UT-01, UT-02 | At least 80 % of participants complete both tasks unassisted; median time on UT-02 ≤ 2 minutes; no severity-4 issue |
+| FR-05 View current stock and consumption history per item as table and chart | UT-03 (stock-out part) | At least 80 % identify the stock-out weeks correctly from the chart or the table |
+| FR-07 View the forecast per item together with history, point forecast, interval and model information | UT-03 (forecast part), UT-04 | At least 80 % read the point forecast and the model name correctly; at least 60 % explain the interval correctly (the interval is the hardest concept; a lower bar is set and an explanatory text in the interface is planned) |
+| Overall | all tasks | Mean SUS ≥ 68 (the commonly cited average score); task completion over all tasks ≥ 75 % unassisted; every severity-3 and severity-4 issue fixed or documented as a known limitation before the final pre-defense |
+| NFR-09 | all tasks | Every task is completed in Chrome and at least once each in Firefox and Edge at 1280 px width without layout defects |
+
+A criterion that is not met is reported as not met with the issue that caused it; criteria are not lowered after the sessions.
+
+### 6.7 Session procedure and environment
+
+Duration 45–60 minutes per participant; moderator Birkhanym, note-taker Evelina or Abzal.
+
+1. Introduction (5 min): purpose of the session, consent, "we are testing the system, not you", the data are synthetic and item names are illustrative, think-aloud explained.
+2. Role questionnaire (3 min).
+3. Tasks UT-01 … UT-08 and the role-specific task (30–40 min), one card at a time, timed.
+4. SUS questionnaire and the three open questions (10 min).
+5. Close: how the results will be used; no further contact unless the participant asks for the results.
+
+Environment: the integrated prototype deployed with Docker Compose on a team laptop or the deployment machine of section 5.9, loaded with the synthetic development dataset; one account per role created for the session with placeholder names and deleted afterwards; a desktop browser at a window width of at least 1280 px. The first sessions run in Chrome; at least one session each runs in Firefox and in Edge, and layout defects are recorded as issues (activity A-11, NFR-09). Sessions take place on site at the participant's organization where possible, otherwise remotely with screen sharing.
+
+Materials (planned, in `docs/ux/user-testing/`): moderator script, task cards, note-taking sheet, answer keys for UT-01 … UT-04, SUS form (English, with a Russian translation for participants who prefer it), role questionnaire.
+
+### 6.8 Analysis and reporting
+
+Results are written to `docs/ux/user-testing-report.md` (planned) with: participants by role (no names), the completion / time / error table per task, SUS scores per participant and the mean, comprehension results, the issue list with severity, the suspected cause and the DIP task that fixes it, decisions taken, and limitations (number of participants, synthetic data, English interface). Severity-3 and severity-4 issues become DIP tasks immediately; fixes are verified in a short re-test with one or two participants or the pilot tester in April 2027 if time allows. The findings also feed the discussion chapter of the thesis.
+
+### 6.9 Schedule
+
+| Period | Step |
+|---|---|
+| Nov 2026 | Stage 1: mockup walkthrough with two or three prospective participants (A-14) |
+| Jan 2027 | After the integration demo: moderator script, task cards and answer keys drafted; pilot session with a team member; reference times and criteria confirmed in this plan |
+| Feb 2027 | Recruitment; sessions with P-1 … P-3; Firefox and Edge checks |
+| Mar 2027 | Sessions with P-4 and P-5 (if recruited); analysis; `docs/ux/user-testing-report.md`; fixes planned as DIP tasks |
+| Apr 2027 | Re-test of the fixes; results written into the thesis |
 
 ## 7. Schedule
 
