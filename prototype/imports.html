@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<!--
+  PharmaStock prototype - Imports
+  PHA2-18 - Last updated: 2026-10-20
+  Static mockup. All numbers, dates and item names are illustrative sample
+  values (same scenario on every screen); nothing is computed or loaded.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Imports - PharmaStock prototype</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">P</span>
+      <span class="brand-name">PharmaStock</span>
+      <span class="brand-tag">mockup</span>
+    </div>
+    <nav class="nav" aria-label="Main navigation">
+      <a class="nav-link" href="index.html">Dashboard</a>
+      <a class="nav-link" href="risks.html">Risks <span class="count">4</span></a>
+      <a class="nav-link" href="items.html">Catalogue</a>
+      <a class="nav-link" href="item.html">Item page</a>
+      <a class="nav-link" href="forecast.html">Forecast runs</a>
+      <a class="nav-link is-active" href="imports.html" aria-current="page">Imports</a>
+      <div class="nav-section">Administration</div>
+      <a class="nav-link" href="settings.html">Settings</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user">
+        <span class="avatar" aria-hidden="true">HP</span>
+        <div>
+          <div class="user-name">Head of pharmacy</div>
+          <div>role: pharmacist</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="content">
+
+    <header class="topbar">
+      <div>
+        <h1>Imports</h1>
+        <p class="subtitle">Last import 19 Oct 2026 10:31 &middot; data up to the week of 12 Oct 2026 &middot; 29 batches since set-up</p>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn" type="button">Download file templates</button>
+        <a class="btn btn-primary" href="forecast.html">Run forecast</a>
+      </div>
+    </header>
+
+    <!-- Upload form + validation report -->
+    <section class="grid grid-1-1 section">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2>New import</h2>
+            <p class="card-sub">CSV (UTF-8, header row) or XLSX export of the accounting system (FR-01). The file is validated first and nothing is saved until the report has no blocking errors (FR-02).</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <form class="form-stack" action="#" method="post">
+            <fieldset class="field">
+              <legend class="label">Source type</legend>
+              <div class="radio-list">
+                <label><input type="radio" name="source_type" value="consumption" checked> Consumption <span class="help"><code>consumption.csv</code>: item_code, item_name, unit, period_start, quantity</span></label>
+                <label><input type="radio" name="source_type" value="stock"> Stock <span class="help"><code>stock.csv</code>: item_code, period_start, quantity_on_hand</span></label>
+                <label><input type="radio" name="source_type" value="receipts"> Receipts <span class="help"><code>receipts.csv</code>: item_code, received_on, quantity, supplier</span></label>
+                <label><input type="radio" name="source_type" value="planned_receipts"> Planned receipts <span class="help"><code>planned_receipts.csv</code>: item_code, expected_on, quantity, supplier</span></label>
+              </div>
+            </fieldset>
+
+            <div class="field">
+              <label class="label" for="file">File</label>
+              <div class="upload-box">
+                <input id="file" name="file" type="file" accept=".csv,.xlsx">
+                <span class="help">Drop the file here or choose it. Up to 20 MB. <code>period_start</code> is the Monday of the week in ISO format (YYYY-MM-DD); quantities are whole numbers and not negative.</span>
+              </div>
+            </div>
+
+            <div class="field field-check">
+              <label><input type="checkbox" name="create_items"> Create missing catalogue items from <code>item_name</code> and <code>unit</code> (consumption files only, FR-03)</label>
+            </div>
+            <div class="field field-check">
+              <label><input type="checkbox" name="replace"> Replace records already imported for the same items and periods (the audit entry records both batches)</label>
+            </div>
+
+            <div class="field field-actions">
+              <button class="btn btn-primary" type="submit">Validate file</button>
+              <button class="btn" type="button" disabled>Import</button>
+              <span class="help">Import is enabled when the validation report has no blocking errors.</span>
+            </div>
+          </form>
+        </div>
+        <div class="card-footer">
+          <span>Only item-level weekly data are accepted. Files with patient-, prescription- or person-level columns must be reduced to the formats above before upload (NFR-04).</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2>Validation report &middot; batch #26</h2>
+            <p class="card-sub"><code>consumption_2026-09.csv</code> &middot; consumption &middot; uploaded 19 Oct 2026 10:12 by Head of pharmacy</p>
+          </div>
+          <span class="pill pill-fail">failed</span>
+        </div>
+        <div class="card-body">
+          <dl class="kv">
+            <dt>Rows read</dt>
+            <dd>180</dd>
+            <dt>Rows accepted</dt>
+            <dd>0 &mdash; the file was rejected as a whole, nothing was saved</dd>
+            <dt>Blocking errors</dt>
+            <dd>4</dd>
+            <dt>Warnings</dt>
+            <dd>1</dd>
+          </dl>
+        </div>
+        <div class="card-body flush table-wrap">
+          <table class="table table-compact">
+            <thead>
+              <tr>
+                <th scope="col">Line</th>
+                <th scope="col">Item</th>
+                <th scope="col">Severity</th>
+                <th scope="col">Problem</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="mono">1</td><td>&mdash;</td><td><span class="pill pill-fail">error</span></td><td>Missing column <code>unit</code>; required columns: item_code, item_name, unit, period_start, quantity</td></tr>
+              <tr><td class="mono">87</td><td class="nowrap">MED-0023</td><td><span class="pill pill-fail">error</span></td><td>Negative quantity &minus;4 in the week of 21 Sep 2026</td></tr>
+              <tr><td class="mono">120</td><td class="nowrap">MED-0042</td><td><span class="pill pill-fail">error</span></td><td>Unknown item code; not in the catalogue and "create missing items" was not selected</td></tr>
+              <tr><td class="mono">133</td><td class="nowrap">MED-0007</td><td><span class="pill pill-fail">error</span></td><td>Duplicate period: the week of 28 Sep 2026 appears twice for this item</td></tr>
+              <tr><td class="mono">61</td><td class="nowrap">MED-0007</td><td><span class="pill pill-neutral">warning</span></td><td>Quantity 96 is 2.0&times; the item's median weekly consumption (possible outlier; does not block the import)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card-footer">
+          <span>The corrected file was imported as batch #27 at 10:20. Audit entries: <code>import.fail</code> (#26), <code>import.finish</code> (#27).</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Data-quality summary (FR-18) -->
+    <section class="card section">
+      <div class="card-header">
+        <div>
+          <h2>Data-quality summary &middot; batches #27 (consumption) and #28 (stock)</h2>
+          <p class="card-sub">FR-18 &middot; period 7 Sep &ndash; 12 Oct 2026, 6 weeks &times; 30 active items = 180 item-weeks &middot; stored in <code>import_batch.summary_json</code></p>
+        </div>
+        <button class="btn btn-sm" type="button">Export report</button>
+      </div>
+      <div class="card-body">
+        <div class="grid grid-kpi">
+          <div class="stat">
+            <div class="kpi-label">Coverage</div>
+            <div class="stat-value">100% / 98.9%</div>
+            <div class="kpi-note">consumption rows 180 of 180 &middot; stock snapshots 178 of 180</div>
+          </div>
+          <div class="stat">
+            <div class="kpi-label">Gaps</div>
+            <div class="stat-value">2</div>
+            <div class="kpi-note">item-weeks without a stock snapshot</div>
+          </div>
+          <div class="stat">
+            <div class="kpi-label">Outliers</div>
+            <div class="stat-value">1</div>
+            <div class="kpi-note">weekly quantities above 2&times; the item's median</div>
+          </div>
+          <div class="stat">
+            <div class="kpi-label">Stock-out weeks</div>
+            <div class="stat-value">1</div>
+            <div class="kpi-note">closing stock 0, flagged as censored demand (FR-17)</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-body flush table-wrap">
+        <table class="table table-compact">
+          <thead>
+            <tr>
+              <th scope="col">Finding</th>
+              <th scope="col">Item</th>
+              <th scope="col">Week</th>
+              <th scope="col">Detail</th>
+              <th scope="col">Effect</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Gap</td><td>MED-0017 Ringer's solution 500 ml</td><td class="nowrap">14 Sep 2026</td><td>No stock snapshot for the week</td><td>Counted as a gap in coverage; not treated as a stock-out</td></tr>
+            <tr><td>Gap</td><td>MED-0024 Losartan 50 mg tablets</td><td class="nowrap">28 Sep 2026</td><td>No stock snapshot for the week</td><td>Counted as a gap in coverage; not treated as a stock-out</td></tr>
+            <tr><td>Outlier</td><td>MED-0007 Paracetamol 500 mg tablets</td><td class="nowrap">21 Sep 2026</td><td>96 packs against a median of 48</td><td>Kept; shown as a warning on the item page</td></tr>
+            <tr class="is-flagged"><td>Stock-out</td><td>MED-0028 Salbutamol 100 mcg/dose inhaler</td><td class="nowrap">28 Sep 2026</td><td>Closing stock 0; 2 inhalers dispensed before the shelf was empty</td><td><code>is_stock_out = true</code>; the week is excluded from model fitting</td></tr>
+            <tr><td>Zero consumption</td><td>MED-0026 Propofol 10 mg/ml 20 ml emulsion, MED-0027 Lidocaine 2% 2 ml solution for injection</td><td class="nowrap">all 6 weeks</td><td>No dispensing in the period with stock on hand</td><td>Intermittent demand, not an error</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Import history -->
+    <section class="card section">
+      <div class="card-header">
+        <div>
+          <h2>Import history</h2>
+          <p class="card-sub">One row per <code>import_batch</code> &middot; status, row counts and the data-quality summary of each file</p>
+        </div>
+        <div class="btn-row">
+          <select class="select" aria-label="Filter by source type">
+            <option>All source types</option>
+            <option>consumption</option>
+            <option>stock</option>
+            <option>receipts</option>
+            <option>planned_receipts</option>
+          </select>
+          <select class="select" aria-label="Filter by status">
+            <option>All statuses</option>
+            <option>completed</option>
+            <option>failed</option>
+          </select>
+        </div>
+      </div>
+      <div class="card-body flush table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Imported at</th>
+              <th scope="col">File</th>
+              <th scope="col">Type</th>
+              <th scope="col">Imported by</th>
+              <th scope="col">Status</th>
+              <th scope="col" class="num">Rows read / accepted</th>
+              <th scope="col">Period</th>
+              <th scope="col" class="num">Unknown items</th>
+              <th scope="col" class="num">Gaps</th>
+              <th scope="col" class="num">Outliers</th>
+              <th scope="col" class="num">Stock-out weeks</th>
+              <th scope="col"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono">29</td><td class="nowrap">19 Oct 2026 10:31</td><td class="mono small">receipts_2026-09.csv</td><td>receipts</td><td>Head of pharmacy</td>
+              <td><span class="pill pill-ok">completed</span></td><td class="num">14 / 14</td><td class="nowrap">7 Sep &ndash; 12 Oct 2026</td><td class="num">0</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td>
+              <td class="actions"><button class="btn btn-sm btn-link" type="button">Details</button></td>
+            </tr>
+            <tr>
+              <td class="mono">28</td><td class="nowrap">19 Oct 2026 10:26</td><td class="mono small">stock_2026-09.csv</td><td>stock</td><td>Head of pharmacy</td>
+              <td><span class="pill pill-ok">completed</span></td><td class="num">178 / 178</td><td class="nowrap">7 Sep &ndash; 12 Oct 2026</td><td class="num">0</td><td class="num">2</td><td class="num">&mdash;</td><td class="num">1</td>
+              <td class="actions"><button class="btn btn-sm btn-link" type="button">Details</button></td>
+            </tr>
+            <tr>
+              <td class="mono">27</td><td class="nowrap">19 Oct 2026 10:20</td><td class="mono small">consumption_2026-09.csv</td><td>consumption</td><td>Head of pharmacy</td>
+              <td><span class="pill pill-ok">completed</span></td><td class="num">180 / 180</td><td class="nowrap">7 Sep &ndash; 12 Oct 2026</td><td class="num">0</td><td class="num">&mdash;</td><td class="num">1</td><td class="num">&mdash;</td>
+              <td class="actions"><button class="btn btn-sm btn-link" type="button">Details</button></td>
+            </tr>
+            <tr>
+              <td class="mono">26</td><td class="nowrap">19 Oct 2026 10:12</td><td class="mono small">consumption_2026-09.csv</td><td>consumption</td><td>Head of pharmacy</td>
+              <td><span class="pill pill-fail">failed</span></td><td class="num">180 / 0</td><td class="subtle">&mdash;</td><td class="num">1</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td>
+              <td class="actions"><button class="btn btn-sm btn-link" type="button">Report</button></td>
+            </tr>
+            <tr>
+              <td class="mono">25</td><td class="nowrap">22 Sep 2026 09:05</td><td class="mono small">planned_receipts_2026-10.csv</td><td>planned_receipts</td><td>Procurement specialist</td>
+              <td><span class="pill pill-ok">completed</span></td><td class="num">5 / 5</td><td class="nowrap">expected 30 Oct &ndash; 24 Nov 2026</td><td class="num">0</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td>
+              <td class="actions"><button class="btn btn-sm btn-link" type="button">Details</button></td>
+            </tr>
+            <tr>
+              <td class="mono">24</td><td class="nowrap">15 Sep 2026 14:40</td><td class="mono small">receipts_2026-08.csv</td><td>receipts</td><td>Pharmacist</td>
+              <td><span class="pill pill-ok">completed</span></td><td class="num">15 / 15</td><td class="nowrap">3 Aug &ndash; 6 Sep 2026</td><td class="num">0</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td>
+              <td class="actions"><button class="btn btn-sm btn-link" type="button">Details</button></td>
+            </tr>
+            <tr>
+              <td class="mono">23</td><td class="nowrap">15 Sep 2026 14:33</td><td class="mono small">consumption_2026-08.csv</td><td>consumption</td><td>Pharmacist</td>
+              <td><span class="pill pill-ok">completed</span></td><td class="num">150 / 150</td><td class="nowrap">3 Aug &ndash; 31 Aug 2026</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">&mdash;</td>
+              <td class="actions"><button class="btn btn-sm btn-link" type="button">Details</button></td>
+            </tr>
+            <tr>
+              <td class="mono">22</td><td class="nowrap">15 Sep 2026 14:28</td><td class="mono small">stock_2026-08.csv</td><td>stock</td><td>Pharmacist</td>
+              <td><span class="pill pill-ok">completed</span></td><td class="num">150 / 150</td><td class="nowrap">3 Aug &ndash; 31 Aug 2026</td><td class="num">0</td><td class="num">0</td><td class="num">&mdash;</td><td class="num">0</td>
+              <td class="actions"><button class="btn btn-sm btn-link" type="button">Details</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card-footer">
+        <span>Showing 8 of 29 batches &middot; batches #1&ndash;#21 loaded the 2023&ndash;2026 history at set-up</span>
+        <span class="btn-row">
+          <button class="btn btn-sm" type="button" disabled>Previous</button>
+          <button class="btn btn-sm" type="button">Next</button>
+        </span>
+      </div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

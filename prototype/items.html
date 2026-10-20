@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<!--
+  PharmaStock prototype - Catalogue
+  PHA2-18 - Last updated: 2026-10-20
+  Static mockup. All numbers, dates and item names are illustrative sample
+  values (same scenario on every screen); nothing is computed or loaded.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Catalogue - PharmaStock prototype</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">P</span>
+      <span class="brand-name">PharmaStock</span>
+      <span class="brand-tag">mockup</span>
+    </div>
+    <nav class="nav" aria-label="Main navigation">
+      <a class="nav-link" href="index.html">Dashboard</a>
+      <a class="nav-link" href="risks.html">Risks <span class="count">4</span></a>
+      <a class="nav-link is-active" href="items.html" aria-current="page">Catalogue</a>
+      <a class="nav-link" href="item.html">Item page</a>
+      <a class="nav-link" href="forecast.html">Forecast runs</a>
+      <a class="nav-link" href="imports.html">Imports</a>
+      <div class="nav-section">Administration</div>
+      <a class="nav-link" href="settings.html">Settings</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user">
+        <span class="avatar" aria-hidden="true">HP</span>
+        <div>
+          <div class="user-name">Head of pharmacy</div>
+          <div>role: pharmacist</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="content">
+
+    <header class="topbar">
+      <div>
+        <h1>Catalogue</h1>
+        <p class="subtitle">31 medicine items, 30 active &middot; current stock as of the week of 12 Oct 2026 &middot; risk from forecast run #12</p>
+      </div>
+      <div class="topbar-actions">
+        <a class="btn" href="imports.html">Import data</a>
+        <button class="btn btn-primary" type="button">Add item</button>
+      </div>
+    </header>
+
+    <!-- Search and filter controls -->
+    <section class="card section">
+      <form class="filters" action="#" method="get">
+        <div class="field grow">
+          <label class="label" for="q">Search</label>
+          <input class="input" id="q" name="q" type="search" placeholder="Code or name, e.g. MED-0001 or amoxicillin">
+        </div>
+        <div class="field">
+          <label class="label" for="group">Group</label>
+          <select class="select" id="group" name="group">
+            <option>All groups</option>
+            <option>Analgesics and antipyretics</option>
+            <option>Anaesthetics</option>
+            <option>Antibacterials</option>
+            <option>Anticoagulants</option>
+            <option>Antidiabetics</option>
+            <option>Antivirals</option>
+            <option>Cardiovascular</option>
+            <option>Corticosteroids</option>
+            <option>Gastrointestinal</option>
+            <option>Infusion solutions</option>
+            <option>Respiratory</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="label" for="risk">Risk</label>
+          <select class="select" id="risk" name="risk">
+            <option>All levels</option>
+            <option>High</option>
+            <option>Medium</option>
+            <option>Low</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="label" for="supplier">Primary supplier</label>
+          <select class="select" id="supplier" name="supplier">
+            <option>All suppliers</option>
+            <option>SK-Pharmacy</option>
+            <option>Distributor A</option>
+            <option>Distributor B</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="label" for="status">Status</label>
+          <select class="select" id="status" name="status">
+            <option>Active and inactive</option>
+            <option selected>Active only</option>
+            <option>Inactive only</option>
+          </select>
+        </div>
+        <div class="field field-actions">
+          <button class="btn btn-primary" type="submit">Apply</button>
+          <button class="btn btn-link" type="reset">Reset</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Catalogue table -->
+    <section class="card section">
+      <div class="card-header">
+        <div>
+          <h2>Medicine items</h2>
+          <p class="card-sub">Sorted by code &middot; lead time of the primary supplier &middot; stock is the closing quantity on hand of the latest imported week</p>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-sm" type="button">Export CSV</button>
+          <button class="btn btn-sm" type="button">Columns</button>
+        </div>
+      </div>
+      <div class="card-body flush table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Code</th>
+              <th scope="col">Name</th>
+              <th scope="col">Unit</th>
+              <th scope="col">Group</th>
+              <th scope="col">Primary supplier</th>
+              <th scope="col" class="num">Lead time, days</th>
+              <th scope="col" class="num">Current stock</th>
+              <th scope="col">Risk</th>
+              <th scope="col">Status</th>
+              <th scope="col"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono nowrap">MED-0001</td>
+              <td><a class="item-name" href="item.html">Amoxicillin 500 mg capsules</a></td>
+              <td>pack</td>
+              <td>Antibacterials</td>
+              <td>SK-Pharmacy</td>
+              <td class="num">21</td>
+              <td class="num">64</td>
+              <td><span class="badge badge-high">High</span></td>
+              <td><span class="tag">active</span></td>
+              <td class="num"><a class="btn btn-sm" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td class="mono nowrap">MED-0002</td>
+              <td><a class="item-name" href="item.html">Ceftriaxone 1 g powder for injection</a></td>
+              <td>vial</td>
+              <td>Antibacterials</td>
+              <td>SK-Pharmacy</td>
+              <td class="num">21</td>
+              <td class="num">180</td>
+              <td><span class="badge badge-medium">Medium</span></td>
+              <td><span class="tag">active</span></td>
+              <td class="num"><a class="btn btn-sm" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td class="mono nowrap">MED-0003</td>
+              <td><a class="item-name" href="item.html">Azithromycin 500 mg tablets</a></td>
+              <td>pack</td>
+              <td>Antibacterials</td>
+              <td>SK-Pharmacy</td>
+              <td class="num">21</td>
+              <td class="num">140</td>
+              <td><span class="badge badge-low">Low</span></td>
+              <td><span class="tag">active</span></td>
+              <td class="num"><a class="btn btn-sm" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td class="mono nowrap">MED-0005</td>
+              <td><a class="item-name" href="item.html">Meropenem 1 g powder for injection</a></td>
+              <td>vial</td>
+              <td>Antibacterials</td>
+              <td>Distributor A</td>
+              <td class="num">14</td>
+              <td class="num">72</td>
+              <td><span class="badge badge-medium">Medium</span></td>
+              <td><span class="tag">active</span></td>
+              <td class="num"><a class="btn btn-sm" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td class="mono nowrap">MED-0007</td>
+              <td><a class="item-name" href="item.html">Paracetamol 500 mg tablets</a></td>
+              <td>pack</td>
+              <td>Analgesics and antipyretics</td>
+              <td>SK-Pharmacy</td>
+              <td class="num">21</td>
+              <td class="num">360</td>
+              <td><span class="badge badge-medium">Medium</span></td>
+              <td><span class="tag">active</span></td>
+              <td class="num"><a class="btn btn-sm" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td class="mono nowrap">MED-0008</td>
+              <td><a class="item-name" href="item.html">Ibuprofen 400 mg tablets</a></td>
+              <td>pack</td>
+              <td>Analgesics and antipyretics</td>
+              <td>Distributor B</td>
+              <td class="num">10</td>
+              <td class="num">210</td>
+              <td><span class="badge badge-low">Low</span></td>
+              <td><span class="tag">active</span></td>
+              <td class="num"><a class="btn btn-sm" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td class="mono nowrap">MED-0011</td>
+              <td><a class="item-name" href="item.html">Metformin 850 mg tablets</a></td>
+              <td>pack</td>
+              <td>Antidiabetics</td>
+              <td>SK-Pharmacy</td>
+              <td class="num">21</td>
+              <td class="num">420</td>
+              <td><span class="badge badge-low">Low</span></td>
+              <td><span class="tag">active</span></td>
+              <td class="num"><a class="btn btn-sm" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td class="mono nowrap">MED-0012</td>
+              <td><a class="item-name" href="item.html">Insulin glargine 100 IU/ml 3 ml</a></td>
+              <td>cartridge</td>
+              <td>Antidiabetics</td>
+              <td>SK-Pharmacy</td>
+              <td class="num">28</td>
+              <td class="num">26</td>
+              <td><span class="badge badge-high">High</span></td>
+              <td><span class="tag">active</span></td>
+              <td class="num"><a class="btn btn-sm" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td class="mono nowrap">MED-0013</td>
+              <td><a class="item-name" href="item.html">Enoxaparin sodium 40 mg/0.4 ml</a></td>
+              <td>syringe</td>
+              <td>Anticoagulants</td>
+              <td>Distributor A</td>
+              <td class="num">14</td>
+              <td class="num">200</td>
+              <td><span class="badge badge-medium">Medium</span></td>
+              <td><span class="tag">active</span></td>
+              <td class="num"><a class="btn btn-sm" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td class="mono nowrap">MED-0015</td>
+              <td><a class="item-name" href="item.html">Sodium chloride 0.9% 500 ml</a></td>
+              <td>bottle</td>
+              <td>Infusion solutions</td>
+              <td>SK-Pharmacy</td>
+              <td class="num">21</td>
+              <td class="num">380</td>
+              <td><span class="badge badge-high">High</span></td>
+              <td><span class="tag">active</span></td>
+              <td class="num"><a class="btn btn-sm" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td class="mono nowrap">MED-0016</td>
+              <td><a class="item-name" href="item.html">Glucose 5% 500 ml</a></td>
+              <td>bottle</td>
+              <td>Infusion solutions</td>
+              <td>SK-Pharmacy</td>
+              <td class="num">21</td>
+              <td class="num">900</td>
+              <td><span class="badge badge-low">Low</span></td>
+              <td><span class="tag">active</span></td>
+              <td class="num"><a class="btn btn-sm" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td class="mono nowrap">MED-0019</td>
+              <td><a class="item-name" href="item.html">Ondansetron 4 mg/2 ml solution for injection</a></td>
+              <td>ampoule</td>
+              <td>Gastrointestinal</td>
+              <td>Distributor B</td>
+              <td class="num">10</td>
+              <td class="num">104</td>
+              <td><span class="badge badge-medium">Medium</span></td>
+              <td><span class="tag">active</span></td>
+              <td class="num"><a class="btn btn-sm" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td class="mono nowrap">MED-0021</td>
+              <td><a class="item-name" href="item.html">Amlodipine 5 mg tablets</a></td>
+              <td>pack</td>
+              <td>Cardiovascular</td>
+              <td>SK-Pharmacy</td>
+              <td class="num">21</td>
+              <td class="num">260</td>
+              <td><span class="badge badge-low">Low</span></td>
+              <td><span class="tag">active</span></td>
+              <td class="num"><a class="btn btn-sm" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td class="mono nowrap">MED-0023</td>
+              <td><a class="item-name" href="item.html">Furosemide 40 mg tablets</a></td>
+              <td>pack</td>
+              <td>Cardiovascular</td>
+              <td>SK-Pharmacy</td>
+              <td class="num">21</td>
+              <td class="num">55</td>
+              <td><span class="badge badge-medium">Medium</span></td>
+              <td><span class="tag">active</span></td>
+              <td class="num"><a class="btn btn-sm" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td class="mono nowrap">MED-0028</td>
+              <td><a class="item-name" href="item.html">Salbutamol 100 mcg/dose inhaler</a></td>
+              <td>inhaler</td>
+              <td>Respiratory</td>
+              <td>Distributor A</td>
+              <td class="num">14</td>
+              <td class="num">9</td>
+              <td><span class="badge badge-high">High</span></td>
+              <td><span class="tag">active</span></td>
+              <td class="num"><a class="btn btn-sm" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td class="mono nowrap">MED-0030</td>
+              <td><a class="item-name" href="item.html">Oseltamivir 75 mg capsules</a></td>
+              <td>pack</td>
+              <td>Antivirals</td>
+              <td>SK-Pharmacy</td>
+              <td class="num">21</td>
+              <td class="num">25</td>
+              <td><span class="badge badge-medium">Medium</span></td>
+              <td><span class="tag">active</span></td>
+              <td class="num"><a class="btn btn-sm" href="item.html">Open</a></td>
+            </tr>
+            <tr class="is-inactive">
+              <td class="mono nowrap">MED-0031</td>
+              <td><a class="item-name" href="item.html">Aciclovir 200 mg tablets</a></td>
+              <td>pack</td>
+              <td>Antivirals</td>
+              <td>&mdash;</td>
+              <td class="num">&mdash;</td>
+              <td class="num">0</td>
+              <td><span class="subtle">not assessed</span></td>
+              <td><span class="tag">inactive since 30 Jun 2026</span></td>
+              <td class="num"><a class="btn btn-sm" href="item.html">Open</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card-footer">
+        <span>17 sample rows of 31 items are shown in this mockup; the real list is paged, 25 items per page.</span>
+        <span class="btn-row">
+          <button class="btn btn-sm" type="button" disabled>Previous</button>
+          <button class="btn btn-sm" type="button">Next</button>
+        </span>
+      </div>
+    </section>
+
+    <p class="notice">Catalogue fields follow <code>medicine_item</code> (FR-03): code, name, unit, group, active flag. Items are deactivated, not deleted, so that history, import batches and audit entries keep referring to them. Unknown item codes found in a consumption import can be added to the catalogue from the file (see Imports).</p>
+
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<!--
+  PharmaStock prototype - Shortage risks
+  PHA2-18 - Last updated: 2026-10-20
+  Static mockup. All numbers, dates and item names are illustrative sample
+  values (same scenario on every screen); nothing is computed or loaded.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shortage risks - PharmaStock prototype</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">P</span>
+      <span class="brand-name">PharmaStock</span>
+      <span class="brand-tag">mockup</span>
+    </div>
+    <nav class="nav" aria-label="Main navigation">
+      <a class="nav-link" href="index.html">Dashboard</a>
+      <a class="nav-link is-active" href="risks.html" aria-current="page">Risks <span class="count">4</span></a>
+      <a class="nav-link" href="items.html">Catalogue</a>
+      <a class="nav-link" href="item.html">Item page</a>
+      <a class="nav-link" href="forecast.html">Forecast runs</a>
+      <a class="nav-link" href="imports.html">Imports</a>
+      <div class="nav-section">Administration</div>
+      <a class="nav-link" href="settings.html">Settings</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user">
+        <span class="avatar" aria-hidden="true">HP</span>
+        <div>
+          <div class="user-name">Head of pharmacy</div>
+          <div>role: pharmacist</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="content">
+
+    <header class="topbar">
+      <div>
+        <h1>Shortage risks</h1>
+        <p class="subtitle">Forecast run #12 &middot; 19 Oct 2026 10:55 &middot; model <code>sba</code> &middot; horizon 12 weeks (19 Oct 2026 &ndash; 4 Jan 2027) &middot; assessments computed 19 Oct 2026 10:56</p>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn" type="button">Export CSV</button>
+        <button class="btn" type="button">Export XLSX</button>
+        <a class="btn btn-primary" href="forecast.html">Run forecast</a>
+      </div>
+    </header>
+
+    <!-- Level filter and other controls -->
+    <section class="card section">
+      <form class="filters" action="#" method="get">
+        <div class="field">
+          <span class="label">Risk level</span>
+          <div class="chips" role="group" aria-label="Risk level">
+            <a class="chip is-active" href="risks.html" aria-current="true">All <span class="chip-count">30</span></a>
+            <a class="chip chip-high" href="risks.html">High <span class="chip-count">4</span></a>
+            <a class="chip chip-medium" href="risks.html">Medium <span class="chip-count">7</span></a>
+            <a class="chip chip-low" href="risks.html">Low <span class="chip-count">19</span></a>
+          </div>
+        </div>
+        <div class="field">
+          <label class="label" for="group">Group</label>
+          <select class="select" id="group" name="group">
+            <option>All groups</option>
+            <option>Antibacterials</option>
+            <option>Antidiabetics</option>
+            <option>Antivirals</option>
+            <option>Infusion solutions</option>
+            <option>Respiratory</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="label" for="before">Stock-out expected before</label>
+          <input class="input" id="before" name="before" type="date" value="2027-01-04">
+        </div>
+        <div class="field grow">
+          <label class="label" for="q">Search</label>
+          <input class="input" id="q" name="q" type="search" placeholder="Code or name">
+        </div>
+        <div class="field field-check">
+          <label><input type="checkbox" name="no_receipts"> Only items without planned receipts</label>
+        </div>
+        <div class="field field-actions">
+          <button class="btn btn-primary" type="submit">Apply</button>
+          <button class="btn btn-link" type="reset">Reset</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Risk list -->
+    <section class="card section">
+      <div class="card-header">
+        <div>
+          <h2>Items at risk</h2>
+          <p class="card-sub">Ordered by risk level, then by the earliest expected stock-out &middot; High: stock-out within the item's lead time &middot; Medium: within the horizon &middot; Low: not within the horizon</p>
+        </div>
+        <span class="small muted nowrap">Safety stock: 1 week of forecast &middot; <a href="settings.html">thresholds</a></span>
+      </div>
+      <div class="card-body flush table-wrap">
+        <table class="table table-risks">
+          <thead>
+            <tr>
+              <th scope="col">Item</th>
+              <th scope="col">Risk</th>
+              <th scope="col">Expected stock-out</th>
+              <th scope="col" class="num">Stock</th>
+              <th scope="col" class="num">Forecast / week</th>
+              <th scope="col" class="num">Lead time</th>
+              <th scope="col">Planned receipts</th>
+              <th scope="col">Gap</th>
+              <th scope="col"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><a class="item-name" href="item.html">Salbutamol 100 mcg/dose inhaler</a><span class="item-code">MED-0028 &middot; Respiratory</span></td>
+              <td><span class="badge badge-high">High</span></td>
+              <td class="nowrap">19 Oct 2026<span class="cell-sub">this week</span></td>
+              <td class="num">9<span class="unit">inhaler</span></td>
+              <td class="num">6.2</td>
+              <td class="num">14 d</td>
+              <td>40 on 3 Nov 2026<span class="cell-sub">Distributor A &middot; planned</span></td>
+              <td>2 weeks<span class="cell-sub">&asymp; 10 inhalers short</span></td>
+              <td class="nowrap actions"><a class="btn btn-sm" href="risks.html#record-delivery">Record delivery</a> <a class="btn btn-sm btn-link" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td><a class="item-name" href="item.html">Amoxicillin 500 mg capsules</a><span class="item-code">MED-0001 &middot; Antibacterials</span></td>
+              <td><span class="badge badge-high">High</span></td>
+              <td class="nowrap">26 Oct 2026</td>
+              <td class="num">64<span class="unit">pack</span></td>
+              <td class="num">21.4</td>
+              <td class="num">21 d</td>
+              <td class="subtle">none</td>
+              <td class="subtle">no delivery planned</td>
+              <td class="nowrap actions"><a class="btn btn-sm" href="risks.html#record-delivery">Record delivery</a> <a class="btn btn-sm btn-link" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td><a class="item-name" href="item.html">Insulin glargine 100 IU/ml 3 ml</a><span class="item-code">MED-0012 &middot; Antidiabetics</span></td>
+              <td><span class="badge badge-high">High</span></td>
+              <td class="nowrap">26 Oct 2026</td>
+              <td class="num">26<span class="unit">cartridge</span></td>
+              <td class="num">9.8</td>
+              <td class="num">28 d</td>
+              <td>60 on 9 Nov 2026<span class="cell-sub">SK-Pharmacy &middot; planned</span></td>
+              <td>2 weeks<span class="cell-sub">&asymp; 13 cartridges short</span></td>
+              <td class="nowrap actions"><a class="btn btn-sm" href="risks.html#record-delivery">Record delivery</a> <a class="btn btn-sm btn-link" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td><a class="item-name" href="item.html">Sodium chloride 0.9% 500 ml</a><span class="item-code">MED-0015 &middot; Infusion solutions</span></td>
+              <td><span class="badge badge-high">High</span></td>
+              <td class="nowrap">2 Nov 2026</td>
+              <td class="num">380<span class="unit">bottle</span></td>
+              <td class="num">118.5</td>
+              <td class="num">21 d</td>
+              <td class="subtle">none</td>
+              <td class="subtle">no delivery planned</td>
+              <td class="nowrap actions"><a class="btn btn-sm" href="risks.html#record-delivery">Record delivery</a> <a class="btn btn-sm btn-link" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td><a class="item-name" href="item.html">Ceftriaxone 1 g powder for injection</a><span class="item-code">MED-0002 &middot; Antibacterials</span></td>
+              <td><span class="badge badge-medium">Medium</span></td>
+              <td class="nowrap">16 Nov 2026</td>
+              <td class="num">180<span class="unit">vial</span></td>
+              <td class="num">34.0</td>
+              <td class="num">21 d</td>
+              <td class="subtle">none</td>
+              <td class="subtle">no delivery planned</td>
+              <td class="nowrap actions"><a class="btn btn-sm" href="risks.html#record-delivery">Record delivery</a> <a class="btn btn-sm btn-link" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td><a class="item-name" href="item.html">Oseltamivir 75 mg capsules</a><span class="item-code">MED-0030 &middot; Antivirals</span></td>
+              <td><span class="badge badge-medium">Medium</span></td>
+              <td class="nowrap">23 Nov 2026</td>
+              <td class="num">25<span class="unit">pack</span></td>
+              <td class="num">4.1</td>
+              <td class="num">21 d</td>
+              <td class="subtle">none</td>
+              <td class="subtle">no delivery planned</td>
+              <td class="nowrap actions"><a class="btn btn-sm" href="risks.html#record-delivery">Record delivery</a> <a class="btn btn-sm btn-link" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td><a class="item-name" href="item.html">Paracetamol 500 mg tablets</a><span class="item-code">MED-0007 &middot; Analgesics and antipyretics</span></td>
+              <td><span class="badge badge-medium">Medium</span></td>
+              <td class="nowrap">30 Nov 2026</td>
+              <td class="num">360<span class="unit">pack</span></td>
+              <td class="num">48.0</td>
+              <td class="num">21 d</td>
+              <td class="subtle">none</td>
+              <td class="subtle">no delivery planned</td>
+              <td class="nowrap actions"><a class="btn btn-sm" href="risks.html#record-delivery">Record delivery</a> <a class="btn btn-sm btn-link" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td><a class="item-name" href="item.html">Enoxaparin sodium 40 mg/0.4 ml</a><span class="item-code">MED-0013 &middot; Anticoagulants</span></td>
+              <td><span class="badge badge-medium">Medium</span></td>
+              <td class="nowrap">7 Dec 2026</td>
+              <td class="num">200<span class="unit">syringe</span></td>
+              <td class="num">22.5</td>
+              <td class="num">14 d</td>
+              <td class="subtle">none</td>
+              <td class="subtle">no delivery planned</td>
+              <td class="nowrap actions"><a class="btn btn-sm" href="risks.html#record-delivery">Record delivery</a> <a class="btn btn-sm btn-link" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td><a class="item-name" href="item.html">Meropenem 1 g powder for injection</a><span class="item-code">MED-0005 &middot; Antibacterials</span></td>
+              <td><span class="badge badge-medium">Medium</span></td>
+              <td class="nowrap">14 Dec 2026</td>
+              <td class="num">72<span class="unit">vial</span></td>
+              <td class="num">7.9</td>
+              <td class="num">14 d</td>
+              <td class="subtle">none</td>
+              <td class="subtle">no delivery planned</td>
+              <td class="nowrap actions"><a class="btn btn-sm" href="risks.html#record-delivery">Record delivery</a> <a class="btn btn-sm btn-link" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td><a class="item-name" href="item.html">Furosemide 40 mg tablets</a><span class="item-code">MED-0023 &middot; Cardiovascular</span></td>
+              <td><span class="badge badge-medium">Medium</span></td>
+              <td class="nowrap">21 Dec 2026</td>
+              <td class="num">55<span class="unit">pack</span></td>
+              <td class="num">5.3</td>
+              <td class="num">21 d</td>
+              <td class="subtle">none</td>
+              <td class="subtle">no delivery planned</td>
+              <td class="nowrap actions"><a class="btn btn-sm" href="risks.html#record-delivery">Record delivery</a> <a class="btn btn-sm btn-link" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td><a class="item-name" href="item.html">Ondansetron 4 mg/2 ml solution for injection</a><span class="item-code">MED-0019 &middot; Gastrointestinal</span></td>
+              <td><span class="badge badge-medium">Medium</span></td>
+              <td class="nowrap">28 Dec 2026</td>
+              <td class="num">104<span class="unit">ampoule</span></td>
+              <td class="num">9.0</td>
+              <td class="num">10 d</td>
+              <td class="subtle">none</td>
+              <td class="subtle">no delivery planned</td>
+              <td class="nowrap actions"><a class="btn btn-sm" href="risks.html#record-delivery">Record delivery</a> <a class="btn btn-sm btn-link" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td><a class="item-name" href="item.html">Glucose 5% 500 ml</a><span class="item-code">MED-0016 &middot; Infusion solutions</span></td>
+              <td><span class="badge badge-low">Low</span></td>
+              <td class="subtle">not within horizon</td>
+              <td class="num">900<span class="unit">bottle</span></td>
+              <td class="num">64.0</td>
+              <td class="num">21 d</td>
+              <td>600 on 24 Nov 2026<span class="cell-sub">SK-Pharmacy &middot; planned</span></td>
+              <td class="subtle">&mdash;</td>
+              <td class="nowrap actions"><a class="btn btn-sm" href="risks.html#record-delivery">Record delivery</a> <a class="btn btn-sm btn-link" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td><a class="item-name" href="item.html">Metformin 850 mg tablets</a><span class="item-code">MED-0011 &middot; Antidiabetics</span></td>
+              <td><span class="badge badge-low">Low</span></td>
+              <td class="subtle">not within horizon</td>
+              <td class="num">420<span class="unit">pack</span></td>
+              <td class="num">18.2</td>
+              <td class="num">21 d</td>
+              <td class="subtle">none</td>
+              <td class="subtle">&mdash;</td>
+              <td class="nowrap actions"><a class="btn btn-sm" href="risks.html#record-delivery">Record delivery</a> <a class="btn btn-sm btn-link" href="item.html">Open</a></td>
+            </tr>
+            <tr>
+              <td><a class="item-name" href="item.html">Amlodipine 5 mg tablets</a><span class="item-code">MED-0021 &middot; Cardiovascular</span></td>
+              <td><span class="badge badge-low">Low</span></td>
+              <td class="subtle">not within horizon</td>
+              <td class="num">260<span class="unit">pack</span></td>
+              <td class="num">12.0</td>
+              <td class="num">21 d</td>
+              <td class="subtle">none</td>
+              <td class="subtle">&mdash;</td>
+              <td class="nowrap actions"><a class="btn btn-sm" href="risks.html#record-delivery">Record delivery</a> <a class="btn btn-sm btn-link" href="item.html">Open</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card-footer">
+        <span>Showing 14 of 30 assessed items &middot; 16 further Low-risk items on the next page</span>
+        <span class="btn-row">
+          <button class="btn btn-sm" type="button" disabled>Previous</button>
+          <button class="btn btn-sm" type="button">Next</button>
+        </span>
+      </div>
+    </section>
+
+    <!-- Record delivery (planned receipt) -->
+    <section class="card section target-card" id="record-delivery">
+      <div class="card-header">
+        <div>
+          <h2>Record delivery</h2>
+          <p class="card-sub">Creates a <code>planned_receipt</code> with status <code>planned</code> (FR-10). Projected stock and risk of the item are recalculated from run #12 without a new forecast run (FR-08); an audit entry is written (FR-15).</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <form class="form-grid" action="#" method="post">
+          <div class="field">
+            <label class="label" for="pr-item">Item</label>
+            <select class="select" id="pr-item" name="item_code">
+              <option selected>MED-0001 &middot; Amoxicillin 500 mg capsules</option>
+              <option>MED-0012 &middot; Insulin glargine 100 IU/ml 3 ml</option>
+              <option>MED-0015 &middot; Sodium chloride 0.9% 500 ml</option>
+              <option>MED-0028 &middot; Salbutamol 100 mcg/dose inhaler</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="label" for="pr-date">Expected on</label>
+            <input class="input" id="pr-date" name="expected_on" type="date" value="2026-10-30">
+          </div>
+          <div class="field">
+            <label class="label" for="pr-qty">Quantity, packs</label>
+            <input class="input" id="pr-qty" name="quantity" type="number" min="1" value="120">
+          </div>
+          <div class="field">
+            <label class="label" for="pr-supplier">Supplier</label>
+            <select class="select" id="pr-supplier" name="supplier">
+              <option selected>SK-Pharmacy (primary, lead time 21 days)</option>
+              <option>Distributor A</option>
+              <option>Distributor B</option>
+            </select>
+          </div>
+          <div class="field span-2">
+            <label class="label" for="pr-note">Note (optional)</label>
+            <input class="input" id="pr-note" name="note" type="text" placeholder="e.g. confirmed by the distributor on 19 Oct 2026, order 4471">
+          </div>
+          <div class="field span-2">
+            <p class="notice">With this delivery the projected stock of Amoxicillin 500 mg capsules would be 42.6 on 19 Oct, 21.2 on 26 Oct and 119.8 on 2 Nov 2026: the stock-out expected in the week of 26 Oct 2026 remains and the risk stays <strong>High</strong> until the delivery is moved before 26 Oct. (Preview shown here as static text; the real form shows the recalculated projection after saving.)</p>
+          </div>
+          <div class="field span-2 field-actions">
+            <button class="btn btn-primary" type="submit">Save planned receipt</button>
+            <button class="btn" type="button">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>
