@@ -25,10 +25,17 @@ This directory holds the experiments of the forecasting module: versioned config
 
 From the repository root, with the forecasting package importable (`pip install -e forecasting`, or `PYTHONPATH=forecasting` for a one-off run):
 
-```
+```bash
 python forecasting/experiments/run_baselines.py \
     --config forecasting/experiments/configs/baselines.yaml \
     --out forecasting/experiments/results/baselines-local
+```
+
+In Windows PowerShell, install the package and use the single-line command below (Bash's `\` line continuation is not supported):
+
+```powershell
+python -m pip install -e forecasting
+python forecasting/experiments/run_baselines.py --config forecasting/experiments/configs/baselines.yaml --out forecasting/experiments/results/baselines-local
 ```
 
 Both arguments are optional: `--config` defaults to `configs/baselines.yaml`, `--out` to `results/<experiment>-<timestamp>`. Relative paths inside the configuration (`dataset.path`) are resolved from the repository root, so the command works from any working directory. The runner refuses to write into a directory that already holds a `metrics.json`.
