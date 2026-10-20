@@ -1,6 +1,6 @@
 # PharmaStock
 
-*Task PHA2-1 · Last updated: 2026-10-14*
+*Task PHA2-1 (updates PHA2-1) · Last updated: 2026-10-20*
 
 **Development of smart supply chain analytics system for forecasting pharmaceutical inventory and preventing medicine shortages in healthcare organizations**
 
@@ -44,7 +44,7 @@ Pharmacy staff lack a tool that forecasts consumption per item and turns forecas
 | Heads of clinical departments | View only: stock, forecasts and risks for the items they use |
 | System administrator | Manages users and roles, reviews the audit log |
 
-Patients are not users of the system, and **no patient data is processed** (see NFR-04 in the requirements specification).
+Patients are not users of the system, and **no patient data is processed** (see NFR-04 in the [requirements specification](docs/requirements.md)).
 
 ## Aim and objectives
 
@@ -77,7 +77,7 @@ Patients are not users of the system, and **no patient data is processed** (see 
 
 **Supervisor:** Kuralay Makhmetova, Senior Lecturer, School of Software Engineering, Astana IT University.
 
-The team composition, roles, plan and evaluation methodology were approved by the supervisor in a justification letter dated 9 October 2026. The team meets the supervisor weekly; individual contribution is tracked by tasks, commits and demos. The detailed allocation of responsibilities is kept in [docs/project-management/responsibilities.md](docs/project-management/responsibilities.md) (planned).
+The team composition, roles, plan and evaluation methodology were approved by the supervisor in a justification letter dated 9 October 2026. The team meets the supervisor weekly; individual contribution is tracked by tasks, commits and demos. The detailed allocation of responsibilities (RACI per work area, ownership of repository parts, thesis chapters) is kept in [docs/project-management/responsibilities.md](docs/project-management/responsibilities.md); supervisor feedback and the decisions taken in response are recorded in [docs/supervision/feedback-log.md](docs/supervision/feedback-log.md).
 
 ## Project scope
 
@@ -110,119 +110,137 @@ The team composition, roles, plan and evaluation methodology were approved by th
 | Time step and horizon | Weekly step, 12-week horizon |
 | Data history | Consumption, stock levels and receipts per item |
 | Stock-outs | Zero consumption during a stock-out is censored demand: it is flagged, not learned as zero |
-| Data source | Real data from a partner healthcare organization is being requested (project risk); a documented synthetic dataset is used for development until real data are available |
+| Data source | Real data from a partner healthcare organization is being requested (project risk, task PHA2-26); a documented synthetic dataset is used for development until real data are available |
 | Forecast quality | MAE and WAPE (WAPE only when total actual consumption in the window > 0) against naive, seasonal-naive, moving-average and Croston/SBA baselines; time-based train/validation/test split |
 | Alert quality | Precision and recall of shortage alerts against actual stock-outs on the test period |
 
 ## Current development status
 
-**As of 14 October 2026 the project is at the analysis and design stage.**
+**As of 20 October 2026 the analysis and design stage is complete, the first runnable components are in the repository, and the project is being packaged for pre-defense 1 (materials due 24 October 2026, Git tag `pre-defense-1`).**
 
-| Area | Status |
+| Area | Status (20 October 2026) |
 |---|---|
-| Repository | Initialised on GitHub (`birxnm/diploma-pharmacy`, default branch `main`) |
-| Team, roles, plan, evaluation methodology | Approved by the supervisor (9 October 2026) |
-| Forecasting module concept | Described in [forecasting/README.md](forecasting/README.md) |
-| Project documentation for pre-defense 1 | In progress: proposal, evidence of relevance, literature review, existing systems and technology comparison, requirements, architecture and diagrams, UX mockups, data specification, verification and evaluation plan, project management documents |
-| Application code (backend, forecasting package, frontend) | Not started; scaffolds are planned for the remainder of October 2026 |
-| Next checkpoint | Pre-defense 1 materials due 24 October 2026 (Git tag `pre-defense-1`) |
+| Project documentation for pre-defense 1 | **Complete and merged:** proposal, evidence of relevance (stakeholders, interview guide, interview log template), literature review, existing systems comparison, technology comparison, requirements specification (FR-01…FR-18, NFR-01…NFR-10), architecture with system context and component diagrams, database schema with ER diagram, REST API contract, user scenarios and use cases with use case diagram, data specification, verification and evaluation plan, project management documents (plan and milestones, risks, responsibilities, task register), supervisor feedback log |
+| UX mockups | **Merged:** seven static HTML/CSS screens in [prototype/](prototype/) (dashboard, risks, catalogue, item page, forecast runs, imports, settings) mapped to the functional requirements |
+| Backend scaffold | **Merged, tests pass:** FastAPI application factory and settings, `GET /api/v1/health`, SQLAlchemy models of the catalogue and the imported time series (`medicine_item`, `supplier`, `item_supplier`, `import_batch`, `consumption_record`, `stock_snapshot`, `receipt`, `planned_receipt`), Alembic configured (no migration files yet), PostgreSQL 16 in Docker Compose, `.env.example`; 21 tests |
+| Forecasting package | **Merged, tests pass:** input schema and validation (malformed input is rejected with a clear error, NFR-06), regular weekly series with stock-out flags, baselines `naive`, `seasonal_naive` (season 52), `moving_average(window)`, `croston`, `sba`, metrics `mae`, `wape` (`None` when the sum of actuals is 0), `bias`, rolling-origin time-based split, entry point `forecasting.api.forecast_items(history, horizon, config)`; 188 tests |
+| Synthetic development dataset | **Merged:** deterministic generator `forecasting/data/generate_synthetic.py` and a committed sample (20 items, 104 weeks, seed 42) in the four import formats, with stock-out weeks and censored demand |
+| Frontend scaffold | **In review (PHA2-23):** Vue 3 + Vite + TypeScript with Vue Router, Pinia, typed API client, placeholder views and unit tests |
+| Continuous integration | **In review (PHA2-22):** GitHub Actions workflow running the backend and forecasting test suites on every pull request (NFR-08) |
+| Experiment runner | **In review (PHA2-24):** versioned configuration and runner for the baseline comparison in `forecasting/experiments/` |
+| Not started | REST API v1 endpoints beyond health (authentication, items, imports, forecast runs, risks, notifications, thresholds, reports), shortage-risk calculation, machine-learning models (first comparison planned as PHA2-27), user interviews (PHA2-25), real data access (PHA2-26) |
+
+What runs today from a clean clone: the backend health endpoint and its interactive API documentation, both Python test suites, the synthetic data generator, forecasting of the sample data with the baselines from Python, and the static mockups. See [Setup, execution and testing](#setup-execution-and-testing). The task-level view of this status is kept in [docs/project-management/task-register.md](docs/project-management/task-register.md).
 
 ## Selected technologies
 
-The technology decisions below are fixed for the project. The comparison of alternatives and the reasoning behind each choice are documented in [docs/technology-comparison.md](docs/technology-comparison.md) (planned); the "Why" column gives only a one-line pointer.
+The technology decisions below are fixed for the project. The comparison of alternatives and the reasoning behind each choice are documented in [docs/technology-comparison.md](docs/technology-comparison.md); the "Why" column gives only a one-line pointer.
 
 | Area | Technology | Why (details in docs/technology-comparison.md) |
 |---|---|---|
 | Backend language and framework | Python 3.12, FastAPI, Pydantic v2, uvicorn | Same language as the forecasting module, so forecasts are called in-process; typed request/response models and generated API documentation |
 | Data access and migrations | SQLAlchemy 2.x, Alembic | Typed ORM models that mirror the data entities; versioned schema migrations |
 | Database | PostgreSQL 16 | Relational data with time series per item, JSON columns for configuration and summaries, runs locally in Docker |
-| Forecasting | pandas, numpy, scikit-learn, statsforecast, LightGBM | Standard tabular time-series toolchain; statsforecast covers the intermittent-demand baselines (Croston/SBA), LightGBM is the ML candidate |
+| Forecasting | pandas, numpy, scikit-learn, statsforecast, LightGBM | Standard tabular time-series toolchain; statsforecast covers the intermittent-demand baselines (Croston/SBA), LightGBM is the ML candidate. The baselines currently in the package are own implementations on pandas and numpy, checked against hand-computed values; statsforecast and LightGBM enter the dependencies with the candidate models (PHA2-27) |
 | Frontend | Vue 3, Vite, TypeScript, Vue Router, Pinia, Chart.js | Component-based SPA for dashboards and item pages; Chart.js for history, forecast and interval charts |
 | Infrastructure | Docker Compose (PostgreSQL), GitHub Actions CI | Reproducible local environment; automated tests on every pull request (NFR-08) |
-| Tests | pytest (backend, forecasting); Vitest (frontend, later) | Standard test runners for each stack |
+| Tests | pytest (backend, forecasting); Vitest (frontend) | Standard test runners for each stack |
 | Documentation | Markdown with Mermaid diagrams | Rendered directly on GitHub; diagram sources are editable text files |
 | Task tracking | [Linear project PharmaStock](https://linear.app/pharmacy-kz/project/pharmastock-03a3f33ce30b) | Required by the university; task IDs are referenced in branches and pull requests |
 
 ## Project documentation and task tracking
 
-**Task tracking:** [Linear project PharmaStock](https://linear.app/pharmacy-kz/project/pharmastock-03a3f33ce30b). Task IDs have the form `PHA2-<n>`.
+**Task tracking:** [Linear project PharmaStock](https://linear.app/pharmacy-kz/project/pharmastock-03a3f33ce30b). Task IDs have the form `PHA2-<n>`; the register of all tasks with responsible member, acceptance criteria, deadline and status is mirrored in [docs/project-management/task-register.md](docs/project-management/task-register.md).
 
-All project documentation lives in [docs/](docs/) with [docs/README.md](docs/README.md) as the index. Documents marked *planned* are not yet in the repository; the links will work once the corresponding task is merged. Status is as of 14 October 2026.
+All project documentation lives in [docs/](docs/) with [docs/README.md](docs/README.md) as the index. Status is as of 20 October 2026: *available* means merged into `main`; *in review* means the pull request is open.
 
 | Area | Document | Status |
 |---|---|---|
-| Index | [docs/README.md](docs/README.md) | planned |
-| Project proposal | [docs/proposal.md](docs/proposal.md) | planned |
-| Evidence of relevance | [docs/evidence-of-relevance/stakeholders.md](docs/evidence-of-relevance/stakeholders.md) | planned |
-| Evidence of relevance | [docs/evidence-of-relevance/interview-guide.md](docs/evidence-of-relevance/interview-guide.md) | planned |
-| Evidence of relevance | [docs/evidence-of-relevance/interview-log.md](docs/evidence-of-relevance/interview-log.md) | planned |
-| Literature review | [docs/literature-review.md](docs/literature-review.md) | planned |
-| Existing systems comparison | [docs/existing-systems-comparison.md](docs/existing-systems-comparison.md) | planned |
-| Technology comparison | [docs/technology-comparison.md](docs/technology-comparison.md) | planned |
-| Requirements specification | [docs/requirements.md](docs/requirements.md) | planned |
-| Architecture | [docs/architecture/architecture.md](docs/architecture/architecture.md) | planned |
-| Architecture | [docs/architecture/api-contract.md](docs/architecture/api-contract.md) | planned |
-| Architecture | [docs/architecture/database-schema.md](docs/architecture/database-schema.md) | planned |
-| Diagrams (editable sources) | [docs/diagrams/src/](docs/diagrams/src/) (`*.mmd`, Mermaid) | planned |
-| Diagrams (exports) | [docs/diagrams/export/](docs/diagrams/export/) (`*.svg`) | planned |
-| UX | [docs/ux/user-scenarios.md](docs/ux/user-scenarios.md) | planned |
-| UX | [docs/ux/use-cases.md](docs/ux/use-cases.md) | planned |
-| UX prototype | [prototype/](prototype/) (static HTML/CSS mockups of key screens) | planned |
-| Data | [docs/data/data-specification.md](docs/data/data-specification.md) | planned |
-| Verification and evaluation plan | [docs/verification-and-evaluation-plan.md](docs/verification-and-evaluation-plan.md) | planned |
-| Project management | [docs/project-management/plan-and-milestones.md](docs/project-management/plan-and-milestones.md) | planned |
-| Project management | [docs/project-management/risks.md](docs/project-management/risks.md) | planned |
-| Project management | [docs/project-management/responsibilities.md](docs/project-management/responsibilities.md) | planned |
-| Project management | [docs/project-management/task-register.md](docs/project-management/task-register.md) | planned |
-| Supervision | [docs/supervision/feedback-log.md](docs/supervision/feedback-log.md) | planned |
-| Forecasting module | [forecasting/README.md](forecasting/README.md) | available |
+| Index | [docs/README.md](docs/README.md) | available |
+| Project proposal | [docs/proposal.md](docs/proposal.md) | available |
+| Evidence of relevance | [docs/evidence-of-relevance/stakeholders.md](docs/evidence-of-relevance/stakeholders.md) | available |
+| Evidence of relevance | [docs/evidence-of-relevance/interview-guide.md](docs/evidence-of-relevance/interview-guide.md) | available |
+| Evidence of relevance | [docs/evidence-of-relevance/interview-log.md](docs/evidence-of-relevance/interview-log.md) | available (template; interviews planned as PHA2-25) |
+| Literature review | [docs/literature-review.md](docs/literature-review.md) | available |
+| Existing systems comparison | [docs/existing-systems-comparison.md](docs/existing-systems-comparison.md) | available |
+| Technology comparison | [docs/technology-comparison.md](docs/technology-comparison.md) | available |
+| Requirements specification | [docs/requirements.md](docs/requirements.md) | available |
+| Architecture | [docs/architecture/architecture.md](docs/architecture/architecture.md) | available |
+| Architecture | [docs/architecture/api-contract.md](docs/architecture/api-contract.md) | available |
+| Architecture | [docs/architecture/database-schema.md](docs/architecture/database-schema.md) | available |
+| Diagrams (editable sources) | [docs/diagrams/src/](docs/diagrams/src/): `system-context.mmd`, `component-diagram.mmd`, `er-diagram.mmd`, `use-case-diagram.mmd` | available |
+| Diagrams (exports) | [docs/diagrams/export/](docs/diagrams/export/) (`*.svg`, see [docs/diagrams/README.md](docs/diagrams/README.md)) | available |
+| UX | [docs/ux/user-scenarios.md](docs/ux/user-scenarios.md) | available |
+| UX | [docs/ux/use-cases.md](docs/ux/use-cases.md) | available |
+| UX prototype | [prototype/README.md](prototype/README.md) (static HTML/CSS mockups of key screens) | available |
+| Data | [docs/data/data-specification.md](docs/data/data-specification.md) | available |
+| Data | [forecasting/data/README.md](forecasting/data/README.md) (synthetic dataset and generator) | available |
+| Verification and evaluation plan | [docs/verification-and-evaluation-plan.md](docs/verification-and-evaluation-plan.md) | available |
+| Project management | [docs/project-management/plan-and-milestones.md](docs/project-management/plan-and-milestones.md) | available |
+| Project management | [docs/project-management/risks.md](docs/project-management/risks.md) | available |
+| Project management | [docs/project-management/responsibilities.md](docs/project-management/responsibilities.md) | available |
+| Project management | [docs/project-management/task-register.md](docs/project-management/task-register.md) | available |
+| Project management | [docs/project-management/ci.md](docs/project-management/ci.md) (what CI checks and how to run the same checks locally) | in review (PHA2-22) |
+| Supervision | [docs/supervision/feedback-log.md](docs/supervision/feedback-log.md) | available |
+| Forecasting module | [forecasting/README.md](forecasting/README.md) (approach: data assumptions, baselines, metrics, split, reproducibility) | available |
+| Forecasting experiments | [forecasting/experiments/README.md](forecasting/experiments/README.md) | in review (PHA2-24) |
+| Backend | [backend/README.md](backend/README.md) | available |
+| Frontend | [frontend/README.md](frontend/README.md) | in review (PHA2-23) |
 | Contribution guide | [CONTRIBUTING.md](CONTRIBUTING.md) | available |
 
 ## Repository structure
 
-Target layout of the repository. As of 14 October 2026 the repository contains `README.md`, `CONTRIBUTING.md`, the documentation index in `docs/README.md` and `forecasting/README.md`; the remaining directories and files are added as the corresponding `PHA2-<n>` tasks are completed.
+Layout of the repository as of 20 October 2026. Directories marked *in review* exist on task branches with an open pull request and are merged into `main` once reviewed.
 
 ```
 .
 ├── README.md                      # this file
-├── CONTRIBUTING.md                # branching, pull requests, review, commit messages
+├── CONTRIBUTING.md                # tasks, branching, commit messages, pull requests, review, tags
 ├── .gitignore
-├── .env.example                   # configuration example with placeholder values
-├── docker-compose.yml             # PostgreSQL for local development
+├── .env.example                   # configuration template with placeholder values (copy to .env)
+├── docker-compose.yml             # PostgreSQL 16 service "db" for local development
 ├── .github/
 │   ├── PULL_REQUEST_TEMPLATE.md
-│   └── workflows/ci.yml           # backend and forecasting tests on every pull request
+│   └── workflows/ci.yml           # backend and forecasting tests on every pull request (in review)
 ├── backend/                       # FastAPI service (Abzal)
 │   ├── app/
-│   │   ├── main.py
-│   │   ├── core/config.py
-│   │   ├── api/routes/            # REST API v1 routes
-│   │   └── db/models.py           # SQLAlchemy models of the data entities
-│   ├── tests/
-│   ├── pyproject.toml
+│   │   ├── main.py                # create_app() factory and the ASGI object `app`
+│   │   ├── core/config.py         # settings read from environment variables / .env
+│   │   ├── api/routes/health.py   # GET /api/v1/health (further routes follow per task)
+│   │   └── db/                    # base.py, models.py (data entities), session.py
+│   ├── alembic/                   # migration environment; alembic/versions/ is empty so far
+│   ├── alembic.ini
+│   ├── tests/                     # test_health.py, test_session.py, test_models.py
+│   ├── pyproject.toml             # dependencies, "dev" extra, pytest configuration
 │   └── README.md
 ├── forecasting/                   # forecasting package (Evelina)
-│   ├── forecasting/
+│   ├── forecasting/               # importable package
 │   │   ├── data/                  # schema.py, validation.py
 │   │   ├── models/                # baselines.py
 │   │   ├── evaluation/            # metrics.py, split.py
 │   │   └── api.py                 # forecast_items(history, horizon, config)
-│   ├── data/                      # generate_synthetic.py, sample/*.csv
-│   ├── experiments/               # configs and saved results per run
-│   ├── tests/
-│   ├── pyproject.toml
-│   └── README.md
-├── frontend/                      # Vue 3 + Vite application (Birkhanym)
-│   ├── src/
+│   ├── data/
+│   │   ├── generate_synthetic.py  # deterministic synthetic dataset generator
+│   │   ├── sample/                # committed sample: consumption, stock, receipts, planned_receipts, items, dataset.json
+│   │   └── README.md
+│   ├── experiments/               # configs/, run_baselines.py, results/ (in review)
+│   ├── tests/                     # test_validation.py, test_baselines.py, test_metrics.py, test_split.py, test_api.py
+│   ├── pyproject.toml             # dependencies, "dev" extra, pytest configuration
+│   └── README.md                  # approach of the forecasting module
+├── frontend/                      # Vue 3 + Vite application (Birkhanym) (in review)
+│   ├── src/                       # main.ts, App.vue, api/, stores/, router/, components/, views/
 │   ├── index.html
 │   ├── package.json
 │   ├── vite.config.ts
 │   └── README.md
-├── prototype/                     # static HTML/CSS mockups of key screens
+├── prototype/                     # static HTML/CSS mockups of key screens (Birkhanym)
+│   ├── index.html                 # dashboard; risks.html, items.html, item.html, forecast.html, imports.html, settings.html
+│   ├── styles.css
+│   └── README.md
 └── docs/                          # project documentation (see table above)
     ├── README.md                  # documentation index
     ├── proposal.md
-    ├── evidence-of-relevance/
+    ├── evidence-of-relevance/     # stakeholders.md, interview-guide.md, interview-log.md
     ├── literature-review.md
     ├── existing-systems-comparison.md
     ├── technology-comparison.md
@@ -234,25 +252,150 @@ Target layout of the repository. As of 14 October 2026 the repository contains `
     ├── ux/                        # user-scenarios.md, use-cases.md
     ├── data/                      # data-specification.md
     ├── verification-and-evaluation-plan.md
-    ├── project-management/        # plan-and-milestones.md, risks.md, responsibilities.md, task-register.md
+    ├── project-management/        # plan-and-milestones.md, risks.md, responsibilities.md, task-register.md, ci.md (in review)
     └── supervision/               # feedback-log.md
 ```
 
-Raw and processed datasets are not committed. Secrets (passwords, API keys) are never committed; configuration is provided through `.env` files based on `.env.example`.
+Raw and processed datasets are not committed; only the small documented sample under `forecasting/data/sample/` is tracked. Secrets (passwords, API keys) are never committed; configuration is provided through a `.env` file based on `.env.example`. Experiment run directories under `forecasting/experiments/results/` are produced locally and are not committed either.
 
 ## Setup, execution and testing
 
-Runnable code is not yet in the repository (status as of 14 October 2026). As soon as the first runnable components are merged, this section will be extended with:
+The commands below were checked on 20 October 2026 on macOS with Python 3.12 and Docker Compose; the Python commands are the same ones the CI workflow runs. Each component also has its own README with more detail: [backend/README.md](backend/README.md), [forecasting/data/README.md](forecasting/data/README.md), [prototype/README.md](prototype/README.md), [frontend/README.md](frontend/README.md) (in review).
 
-- **Setup:** prerequisites, how to start PostgreSQL with Docker Compose, how to install the backend, forecasting and frontend dependencies, and how to configure the environment from `.env.example`.
-- **Execution:** how to start the backend API, run a forecast and open the web interface.
-- **Testing:** how to run the backend and forecasting test suites locally; the same suites run in GitHub Actions on every pull request.
+### Prerequisites
 
-Each component will also carry its own README (`backend/README.md`, `forecasting/README.md`, `frontend/README.md`) with component-specific instructions. The planned data preparation and modelling pipeline is already described in [forecasting/README.md](forecasting/README.md).
+| Tool | Needed for | Notes |
+|---|---|---|
+| Git | everything | — |
+| Python 3.12 | backend, forecasting | both packages declare `requires-python >= 3.12` |
+| Docker with the Compose plugin | PostgreSQL | optional at this stage: the health endpoint and all tests run without a database |
+| Node.js 20 or newer with npm 10 | frontend (in review) | not needed for the backend, the forecasting package or the mockups |
+| A current desktop browser (Chrome, Firefox or Edge) | mockups, API documentation, frontend | NFR-09 |
+
+### 1. Clone and configure
+
+```bash
+git clone https://github.com/birxnm/diploma-pharmacy.git
+cd diploma-pharmacy
+cp .env.example .env        # then replace the placeholder values
+```
+
+`.env` is read by Docker Compose (database user, password, name and port) and by the backend (`DATABASE_URL`, `SECRET_KEY`, `CORS_ORIGINS`, …). It is ignored by Git. Every backend setting has a development default, so the backend and its tests also start without `.env`; Docker Compose refuses to start without the `POSTGRES_*` variables.
+
+### 2. Python environment
+
+One virtual environment in the repository root serves both Python packages. Each package is installed in editable mode with its `dev` extra (pytest and, for the backend, the HTTP test client):
+
+```bash
+python -m venv .venv
+source .venv/bin/activate              # Windows: .venv\Scripts\activate
+python -m pip install --upgrade pip
+pip install -e "./backend[dev]" -e "./forecasting[dev]"
+```
+
+To install only one of the packages, run `pip install -e ".[dev]"` inside `backend/` or `forecasting/` instead; this is what the CI workflow does per job.
+
+### 3. Database (PostgreSQL 16 with Docker Compose)
+
+```bash
+docker compose up -d db          # start PostgreSQL 16 in the background
+docker compose ps                # the db service must report "healthy"
+docker compose logs -f db        # follow the database log
+docker compose down              # stop; add -v to delete the data volume as well
+```
+
+The service publishes port `${POSTGRES_PORT}` (default 5432) on the host; the backend connects through `DATABASE_URL` from `.env`. To open a `psql` shell inside the container: `docker compose exec db psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"`. Schema migrations are managed with Alembic from `backend/` (`alembic upgrade head`); no migration files exist yet, so this step is not required for the current scaffold. If port 5432 is already in use, change `POSTGRES_PORT` and the port in `DATABASE_URL` in `.env`.
+
+### 4. Backend (FastAPI)
+
+Run the API from `backend/`:
+
+```bash
+cd backend
+uvicorn app.main:app --reload --port 8000
+```
+
+- Health check: <http://localhost:8000/api/v1/health> returns `{"status": "ok", "app_name": "PharmaStock", "version": "0.1.0", "environment": "development"}`.
+- Interactive API documentation: <http://localhost:8000/docs> (Swagger UI) and <http://localhost:8000/redoc>; OpenAPI document at `/api/v1/openapi.json`.
+- The health endpoint does not touch the database, so it works whether or not the `db` service is running. The remaining endpoints of REST API v1 are specified in [docs/architecture/api-contract.md](docs/architecture/api-contract.md) and are implemented task by task.
+
+Tests (FastAPI `TestClient`, in-memory SQLite for the model and session tests; no PostgreSQL or `.env` needed):
+
+```bash
+cd backend
+pytest -q
+```
+
+### 5. Forecasting package
+
+Tests (baselines are checked against hand-computed values; validation tests cover the error cases of NFR-06):
+
+```bash
+cd forecasting
+pytest -q
+```
+
+Synthetic development dataset. The generator is deterministic: the command below reproduces the committed sample byte for byte, so `git status` must stay clean after it. Run it from the repository root:
+
+```bash
+python forecasting/data/generate_synthetic.py --items 20 --weeks 104 --seed 42 --out forecasting/data/sample
+python forecasting/data/generate_synthetic.py --help      # --items, --weeks, --seed, --out, --end, --write-truth, --omit-zero-rows
+python forecasting/data/generate_synthetic.py             # default development set (30 items, 3 years) into ./synthetic, ignored by Git
+```
+
+Forecasting from Python, with the package installed as in step 2 (from the repository root):
+
+```python
+import pandas as pd
+from forecasting.api import forecast_items
+
+history = pd.read_csv("forecasting/data/sample/consumption.csv")
+result = forecast_items(history, horizon=12, config={"model": "sba", "params": {"alpha": 0.1}})
+result.forecasts    # item_code, period_start, point, model: one row per item and forecast week
+result.item_info    # per item: history length, filled weeks, censored weeks, model used
+```
+
+Available model names are `naive`, `seasonal_naive`, `moving_average`, `croston` and `sba`; malformed input raises `DataValidationError` instead of producing a forecast. Experiment configurations and the runner for the baseline comparison live in `forecasting/experiments/` (in review, PHA2-24; see its README once merged).
+
+### 6. UI mockups (prototype)
+
+Open `prototype/index.html` in a desktop browser; the pages link to each other through the left navigation and need no server or build step. To serve the folder instead:
+
+```bash
+cd prototype
+python -m http.server 8080       # then open http://localhost:8080/
+```
+
+### 7. Frontend (in review)
+
+The Vue 3 scaffold of PHA2-23 is used as follows once merged; see [frontend/README.md](frontend/README.md) for details.
+
+```bash
+cd frontend
+npm install
+npm run dev          # http://localhost:5173, proxies /api to the backend on port 8000
+npm run build        # type check and production build into dist/
+npm run test         # Vitest unit tests
+```
+
+### 8. Everything together
+
+For a local demo of the current state, in three terminals from the repository root: `docker compose up -d db` (optional), `cd backend && uvicorn app.main:app --reload --port 8000`, and `cd frontend && npm run dev` (once merged). The sidebar of the frontend shows whether the backend answers; the mockups in `prototype/` show the target screens.
+
+### Test summary
+
+| Suite | Command | Needs | CI job (in review, PHA2-22) |
+|---|---|---|---|
+| Backend | `cd backend && pytest -q` | Python 3.12, `backend[dev]` installed | `backend-tests` |
+| Forecasting | `cd forecasting && pytest -q` | Python 3.12, `forecasting[dev]` installed | `forecasting-tests` |
+| Synthetic data | regenerate the sample (step 5); `git status` shows no change | forecasting dependencies | — |
+| Frontend | `cd frontend && npm run build && npm run test` | Node.js 20 | planned |
+
+Both Python suites run in CI on every pull request and on every push to `main` once the workflow is merged (NFR-08); the lint job (`ruff`) is advisory. The same checks are listed in the pull request template.
 
 ## Milestones
 
-From the plan approved by the supervisor. Detailed planning is kept in [docs/project-management/plan-and-milestones.md](docs/project-management/plan-and-milestones.md) (planned).
+From the plan approved by the supervisor. Detailed planning with exit criteria per milestone is kept in [docs/project-management/plan-and-milestones.md](docs/project-management/plan-and-milestones.md).
 
 | Period | Deliverables |
 |---|---|
@@ -268,10 +411,11 @@ Each submission is tagged in Git: `pre-defense-1`, `pre-defense-2`, `final-pre-d
 
 ## How we work
 
-- Every meaningful work item is a Linear issue `PHA2-<n>` with a responsible student, expected outcome, acceptance criteria and deadline.
-- `main` is the reviewed baseline. Work is done in branches named `PHA2-<n>-<slug>` and merged through pull requests that reference the task and describe how the change was checked.
-- Another team member reviews every pull request before merging.
+- Every meaningful work item is a Linear issue `PHA2-<n>` with a responsible student, expected outcome, acceptance criteria and deadline, mirrored in [docs/project-management/task-register.md](docs/project-management/task-register.md).
+- `main` is the reviewed baseline. Work is done in branches named `PHA2-<n>-<slug>` and merged through pull requests that reference the task and describe how the change was checked ([.github/PULL_REQUEST_TEMPLATE.md](.github/PULL_REQUEST_TEMPLATE.md)).
+- Commit messages are written in English as `type(scope): subject [PHA2-<n>]`, for example `docs(readme): update status and setup for pre-defense 1 [PHA2-1]`.
+- Another team member reviews every pull request before merging; the owner of the affected area is the preferred reviewer.
 - Documentation and design changes are committed the same way as code.
 - Each member commits from their own account with identifiable author details.
 
-The full conventions (branching, commit messages, pull request template, review checklist) are described in [CONTRIBUTING.md](CONTRIBUTING.md) (planned).
+The full conventions (branching, commit messages, pull request template, review checklist, what must never be committed, tags) are described in [CONTRIBUTING.md](CONTRIBUTING.md).
