@@ -1,6 +1,6 @@
 # Contributing to PharmaStock
 
-_PHA2-4 · Last updated: 2026-10-14_
+_PHA2-1 (updates PHA2-4) · Last updated: 2026-10-20_
 
 This guide describes how the team works in the `diploma-pharmacy` repository:
 how tasks are tracked, how branches and commits are named, how changes are
@@ -17,8 +17,8 @@ Git history under the author's own name.
 | Abzal Bakhytov | — | Backend (`backend/`): Python, database, REST API, import and validation, risk calculation, access control and audit log, deployment, API documentation |
 | Evelina Penkova | @etoevelina | Data preparation and analysis, forecasting models and experiments (`forecasting/`), evaluation on a hold-out period, serving forecasts through the API together with Abzal |
 
-The detailed split of tasks is kept in `docs/project-management/responsibilities.md`
-(planned). Changes outside your own area are welcome, but the owner of that
+The detailed split of tasks is kept in `docs/project-management/responsibilities.md`.
+Changes outside your own area are welcome, but the owner of that
 area reviews them.
 
 ## 2. Task tracking
@@ -44,9 +44,9 @@ area reviews them.
   hyphen-separated description in English:
 
   ```text
-  PHA2-4-repository-structure
-  PHA2-11-functional-requirements
-  PHA2-23-croston-baseline
+  PHA2-4-repo-structure
+  PHA2-11-requirements
+  PHA2-16-forecasting-baselines
   ```
 
 - Start a task from an up-to-date `main`:
@@ -54,7 +54,7 @@ area reviews them.
   ```bash
   git checkout main
   git pull origin main
-  git checkout -b PHA2-11-functional-requirements
+  git checkout -b PHA2-11-requirements
   ```
 
 - Keep branches short-lived (days, not weeks). If `main` moves on while you
@@ -96,11 +96,11 @@ Examples:
 
 ```text
 docs(requirements): add functional requirements [PHA2-11]
-feat(forecasting): add Croston and SBA baselines [PHA2-23]
-fix(backend): reject negative quantities on import [PHA2-30]
-test(forecasting): cover WAPE with zero actuals [PHA2-23]
+feat(forecasting): add Croston and SBA baselines [PHA2-16]
+fix(backend): reject negative quantities on import [PHA2-28]
+test(forecasting): cover WAPE with zero actuals [PHA2-16]
 chore(repo): add .gitignore and contribution guide [PHA2-4]
-ci(github): run backend and forecasting tests on pull requests [PHA2-5]
+ci(github): run backend and forecasting tests on pull requests [PHA2-22]
 ```
 
 Commit small, coherent changes. One commit should be understandable on its own
@@ -115,7 +115,8 @@ and should not mix unrelated work (for example a document and a code change).
   example `docs(requirements): add functional requirements [PHA2-11]`.
 - A pull request is merged only when:
   1. CI is green (automated tests for the backend and the forecasting module
-     run on every pull request, see `.github/workflows/ci.yml`, planned);
+     run on every pull request, see `.github/workflows/ci.yml` and
+     `docs/project-management/ci.md`);
   2. it has been **reviewed and approved by another team member** — authors do
      not approve their own work; the owner of the affected area is the
      preferred reviewer;
@@ -137,7 +138,9 @@ and should not mix unrelated work (for example a document and a code change).
   succeed; component tests with Vitest are planned.
 - **Documentation** (`docs/`): Markdown, English, concise, tables for
   comparisons and requirement lists. Each document starts with its title and a
-  line `_PHA2-<n> · Last updated: YYYY-MM-DD_`. Requirement IDs (`FR-xx`,
+  header line that names the task that produced it and the date of the last
+  update, for example `_PHA2-<n> · Last updated: YYYY-MM-DD_`; status, authors
+  and reviewers may be added to the same line. Requirement IDs (`FR-xx`,
   `NFR-xx`), entity names and API paths are reused verbatim across documents,
   code and diagrams.
 - **Diagrams**: Mermaid sources in `docs/diagrams/src/*.mmd`, rendered copies in
