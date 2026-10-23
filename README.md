@@ -72,7 +72,7 @@ Patients are not users of the system, and **no patient data is processed** (see 
 | Team member | GitHub | Responsibilities |
 |---|---|---|
 | Birkhanym Kazhymukhamet | [@birxnm](https://github.com/birxnm) | Requirements analysis and user scenarios, web interface (frontend), UX mockups, visualisation of forecasts and shortage alerts, user testing |
-| Abzal Bakhytov | to be added | Backend (Python), database, REST API, data import and validation, integration of the forecasting module, shortage-risk calculation, access control and audit log, deployment and API documentation |
+| Abzal Bakhytov | [@abzaliito](https://github.com/abzaliito) | Backend (Python), database, REST API, data import and validation, integration of the forecasting module, shortage-risk calculation, access control and audit log, deployment and API documentation |
 | Evelina Penkova | [@etoevelina](https://github.com/etoevelina) | Data preparation and analysis, forecasting models (baselines and ML), hyperparameter tuning, evaluation on a hold-out period, error analysis, reproducible experiments, serving forecasts through the API together with Abzal |
 
 **Supervisor:** Kuralay Makhmetova, Senior Lecturer, School of Software Engineering, Astana IT University.
