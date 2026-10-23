@@ -1,6 +1,6 @@
 # PharmaStock — Risk Register and Dependencies
 
-_PHA2-20 · Last updated: 2026-10-23 · Author: Birkhanym Kazhymukhamet · Reviewer: Evelina Penkova_
+_PHA2-20 · Last updated: 2026-10-20 · Author: Birkhanym Kazhymukhamet · Reviewer: Evelina Penkova_
 
 This document lists the risks of the diploma project PharmaStock (academic year 2026–2027), how the team reduces them, who watches each one and what event means that the risk is materialising. It also records the dependencies between the work of the three team members and the supervisor review checkpoints, because most schedule risks come from one module waiting for another. The register is reviewed at the weekly supervisor meeting together with [plan-and-milestones.md](plan-and-milestones.md) and [task-register.md](task-register.md); the constraints and assumptions it builds on are in [proposal.md](../proposal.md) section 8.2.
 
@@ -35,9 +35,9 @@ Exposure is read from the two scales together: a risk with High probability or H
 | R-01 | Open, being handled | The request is in progress (PHA2-26, due 31 October 2026); the synthetic dataset and its generator are merged (PHA2-15) |
 | R-03 | Open, not yet observable | Baselines and metrics are merged (PHA2-16); the first comparison is planned for November (PHA2-27) |
 | R-05 | Open, monitored | Pre-defense 1 tasks are on schedule as of the task register; the examination session dates will be added to the plan when the academic calendar is confirmed |
-| R-06 | Reduced | API contract (PHA2-17) and forecasting interface (PHA2-16) merged; frontend scaffold (PHA2-23) and CI (PHA2-22) merged |
+| R-06 | Reduced | API contract (PHA2-17) and forecasting interface (PHA2-16) merged; frontend scaffold (PHA2-23) and CI (PHA2-22) in review |
 | R-07 | Reduced | Stock-out flagging is part of the data specification and the synthetic dataset (PHA2-15) and of the validation module (PHA2-16) |
-| R-08 | Reduced | Backend scaffold with Docker Compose merged (PHA2-3); CI workflow merged and green on `main` (PHA2-22) |
+| R-08 | Reduced | Backend scaffold with Docker Compose merged (PHA2-3); CI workflow in review (PHA2-22) |
 | R-02, R-04, R-09, R-10 | Open, monitored | No trigger observed so far |
 
 ## 4. Dependencies

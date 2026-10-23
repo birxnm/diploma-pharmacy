@@ -1,6 +1,6 @@
 # Forecasting Module
 
-_PHA2-6 · Last updated: 2026-10-23 · Author: Evelina Penkova_
+_PHA2-6 · Last updated: 2026-10-20 · Author: Evelina Penkova_
 
 This directory contains the data preparation code and the demand forecasting
 models of PharmaStock, the smart supply chain analytics system for
@@ -10,11 +10,11 @@ turns into shortage risk (FR-06, FR-07, FR-08, FR-16, FR-17).
 
 **Owner:** Evelina Penkova (data preparation, forecasting models, experiments)
 
-Status on 2026-10-23: the package `forecasting/forecasting/` with input
+Status on 2026-10-20: the package `forecasting/forecasting/` with input
 validation, the five baselines, the metrics, the time-based split and the entry
-point `forecast_items` is merged (PHA2-16, 194 tests); the synthetic development
+point `forecast_items` is merged (PHA2-16, 188 tests); the synthetic development
 dataset and its generator are merged (PHA2-15); the experiment runner for the
-baseline comparison is merged (PHA2-24). Machine-learning models, prediction
+baseline comparison is in review (PHA2-24). Machine-learning models, prediction
 intervals and censored-demand handling inside the models are planned (PHA2-27
 and later).
 
@@ -186,7 +186,7 @@ forecasting/
 │   ├── evaluation/              # metrics.py: mae, wape, bias; split.py: split_by_cutoff, rolling_origin_windows
 │   └── api.py                   # forecast_items(history, horizon, config) -> ForecastResult
 ├── data/                        # generate_synthetic.py, sample/ (committed synthetic sample), README.md
-├── experiments/                 # configs/, run_baselines.py, results/ (runs not committed), README.md (PHA2-24)
+├── experiments/                 # configs/, run_baselines.py, results/ (runs not committed), README.md (in review, PHA2-24)
 ├── tests/                       # pytest: test_validation, test_baselines, test_metrics, test_split, test_api
 ├── pyproject.toml               # dependencies, "dev" extra, pytest configuration
 └── README.md                    # this file
