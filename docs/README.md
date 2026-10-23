@@ -1,13 +1,13 @@
 # PharmaStock documentation
 
-_PHA2-1 (updates PHA2-4) · Last updated: 2026-10-20_
+_PHA2-1 (updates PHA2-4) · Last updated: 2026-10-23_
 
 This folder holds the project documentation of **PharmaStock**, the smart
 supply chain analytics system for forecasting pharmaceutical inventory and
 preventing medicine shortages in healthcare organizations (diploma project,
 Astana IT University, School of Software Engineering, group SE-2414,
 2026–2027). The index below lists every document the team maintains, in the
-order in which it is read. Status is given as of 2026-10-20: **available**
+order in which it is read. Status is given as of 2026-10-23: **available**
 means merged into `main`, **in review** means the pull request is open, and
 **planned** means the document has not been written yet; names of planned
 documents are fixed so that cross-references can be added now.
@@ -70,7 +70,7 @@ documents are fixed so that cross-references can be added now.
 | `project-management/risks.md` | Project risks (data access, integration, schedule) with owners, triggers and mitigation; dependencies between modules | Available (PHA2-20) |
 | `project-management/responsibilities.md` | Detailed split of responsibilities between the three team members | Available (PHA2-20) |
 | `project-management/task-register.md` | Register of Linear issues (`PHA2-<n>`) with responsible member, acceptance criteria, deadline, status and branch | Available (PHA2-20) |
-| `project-management/ci.md` | What the CI workflow checks on every pull request and how to run the same checks locally | In review (PHA2-22) |
+| `project-management/ci.md` | What the CI workflow checks on every pull request and how to run the same checks locally | Available (PHA2-22) |
 | `supervision/feedback-log.md` | Log of supervisor meetings and feedback | Available (PHA2-21) |
 
 ## Related documents outside `docs/`
@@ -81,9 +81,9 @@ documents are fixed so that cross-references can be added now.
 | `../CONTRIBUTING.md` | Tasks, branching, commit messages, pull requests, review, tags | Available (PHA2-4, updated with PHA2-1) |
 | `../forecasting/README.md` | Scope, approach, package layout and backend interface of the forecasting module | Available (PHA2-6) |
 | `../forecasting/data/README.md` | Synthetic development dataset: generator, committed sample, how to regenerate | Available (PHA2-15) |
-| `../forecasting/experiments/README.md` | Experiment layout, configuration format, runner and result files, reproducibility rules | In review (PHA2-24) |
+| `../forecasting/experiments/README.md` | Experiment layout, configuration format, runner and result files, reproducibility rules | Available (PHA2-24) |
 | `../backend/README.md` | Backend service: FastAPI scaffold, settings, database, tests | Available (PHA2-3) |
-| `../frontend/README.md` | Web interface: Vue 3 + Vite scaffold, setup and scripts | In review (PHA2-23) |
+| `../frontend/README.md` | Web interface: Vue 3 + Vite scaffold, setup and scripts | Available (PHA2-23) |
 | `../prototype/README.md` | Static mockups of key screens and their mapping to requirements | Available (PHA2-18) |
 
 ## Adding a document
