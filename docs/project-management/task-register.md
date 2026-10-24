@@ -1,6 +1,6 @@
 # PharmaStock — Task Register
 
-_PHA2-20 · Last updated: 2026-10-20 · Author: Evelina Penkova · Reviewer: Birkhanym Kazhymukhamet_
+_PHA2-20 · Last updated: 2026-10-23 · Author: Evelina Penkova · Reviewer: Birkhanym Kazhymukhamet_
 
 This register mirrors the Linear team **PHA2** (link will be added when the instance is confirmed) so that the task history is readable from the repository without access to the tracker. It lists every task with its responsible member, expected outcome, acceptance criteria, deadline, status and branch. Statuses are given **as of 2026-10-20**. The register is updated when a pull request is merged and before each weekly supervisor meeting; the Linear board remains the primary source and this file follows it.
 
@@ -20,10 +20,10 @@ This register mirrors the Linear team **PHA2** (link will be added when the inst
 
 | Responsible | Done | In review | Planned | Total |
 |---|---|---|---|---|
-| Birkhanym Kazhymukhamet | 8 | 1 | 2 | 11 |
-| Abzal Bakhytov | 5 | 1 | 2 | 8 |
-| Evelina Penkova | 8 | 1 | 3 | 12 |
-| **Total** | **21** | **3** | **7** | **31** |
+| Birkhanym Kazhymukhamet | 9 | 0 | 2 | 11 |
+| Abzal Bakhytov | 6 | 0 | 2 | 8 |
+| Evelina Penkova | 9 | 0 | 3 | 12 |
+| **Total** | **24** | **0** | **7** | **31** |
 
 Tasks marked "with" count for the responsible member only; the contributors' work is visible in the commits of the branch.
 
@@ -51,10 +51,10 @@ Tasks marked "with" count for the responsible member only; the contributors' wor
 | PHA2-19 | Verification and evaluation plan | Evelina with Abzal and Birkhanym | `docs/verification-and-evaluation-plan.md`: forecasting evaluation design (baselines, MAE and WAPE, rolling-origin split, measurement conditions), backend and integration testing plan, user testing and UX evaluation plan, traceability to requirements | Metrics and split rules match `requirements.md` and the forecasting package; precision and recall of alerts defined; every Must requirement traced to a verification method | 2026-10-20 | Done | `PHA2-19-verification-plan` |
 | PHA2-20 | Project management documents | Evelina with Birkhanym | `docs/project-management/plan-and-milestones.md`, `responsibilities.md`, `task-register.md` (Evelina); `risks.md` (Birkhanym) | Timeline matches the plan approved by the supervisor; RACI covers every work area; register mirrors Linear with statuses checked against merged branches; risk register has owners and triggers; dependencies between modules listed | 2026-10-20 | Done | `PHA2-20-project-management` |
 | PHA2-21 | Supervisor feedback log | Birkhanym | `docs/supervision/feedback-log.md` with the decisions of 9 October 2026 and a template for weekly entries | Entries have date, participants, feedback, decisions and follow-up tasks; each supervisor point mapped to a document or a task; no entries for meetings that have not taken place | 2026-10-20 | Done | `PHA2-21-supervisor-feedback` |
-| PHA2-22 | CI workflow | Abzal | `.github/workflows/ci.yml` running `pytest` for `backend/` and `forecasting/` and lint on every pull request; CI checks documented | Workflow runs on the pull request and is green; both test suites executed; a failing job blocks the merge (NFR-08) | 2026-10-23 | In review | `PHA2-22-ci-workflow` |
-| PHA2-23 | Frontend scaffold | Birkhanym | `frontend/`: Vue 3 + Vite + TypeScript with Vue Router, Pinia, API client and placeholder views | `npm run build` passes; dev proxy reaches `GET /api/v1/health`; placeholder routes for dashboard, items, risks, forecast, imports and settings; `frontend/README.md` with setup | 2026-10-23 | In review | `PHA2-23-frontend-scaffold` |
+| PHA2-22 | CI workflow | Abzal | `.github/workflows/ci.yml` running `pytest` for `backend/` and `forecasting/` and lint on every pull request; CI checks documented | Workflow runs on the pull request and is green; both test suites executed; a failing job blocks the merge (NFR-08) | 2026-10-23 | Done | `PHA2-22-ci-workflow` |
+| PHA2-23 | Frontend scaffold | Birkhanym | `frontend/`: Vue 3 + Vite + TypeScript with Vue Router, Pinia, API client and placeholder views | `npm run build` passes; dev proxy reaches `GET /api/v1/health`; placeholder routes for dashboard, items, risks, forecast, imports and settings; `frontend/README.md` with setup | 2026-10-23 | Done | `PHA2-23-frontend-scaffold` |
 | PHA2-1 | Project README (initial version and pre-defense update) | Evelina | `README.md` with description, problem statement, users, expected outcomes, team, scope, technologies and links (initial version merged 2026-10-13); updated for pre-defense 1 with development status, setup, run and test instructions, links to the new documents and the repository tree | All sections of the university README checklist present; relative links resolve; commands verified on a clean clone; the status section agrees with this register | 2026-10-20 | Done | `PHA2-1-project-readme`, `PHA2-1-readme-pre-defense` |
-| PHA2-24 | Experiment runner skeleton | Evelina | `forecasting/experiments/`: layout, baseline configuration, runner script producing metrics and predictions per run | Runner executes on the sample dataset and writes `metrics.json` and predictions; configuration versioned with a fixed seed (NFR-05); `pytest` passes | 2026-10-23 | In review | `PHA2-24-experiment-runner` |
+| PHA2-24 | Experiment runner skeleton | Evelina | `forecasting/experiments/`: layout, baseline configuration, runner script producing metrics and predictions per run | Runner executes on the sample dataset and writes `metrics.json` and predictions; configuration versioned with a fixed seed (NFR-05); `pytest` passes | 2026-10-23 | Done | `PHA2-24-experiment-runner` |
 | PHA2-25 | User interviews | Birkhanym | Interviews with pharmacy and procurement staff following `interview-guide.md`; findings in `interview-log.md`; requirement changes registered as tasks | At least three interviews covering the pharmacist and procurement roles; log entries with date, role, organization type and findings; assumptions A-01 to A-03 confirmed or revised; resulting changes to `requirements.md` and mockups registered as DIP tasks | 2026-11-07 | Planned | `PHA2-25-user-interviews` |
 | PHA2-26 | Real data access agreement | Evelina with the supervisor | Written request to a partner healthcare organization for anonymised, aggregated consumption, stock and receipt history; decision and conditions of use recorded | Request sent through the supervisor; outcome (granted, refused or pending) recorded in the feedback log and `risks.md` by the deadline; if granted, conditions of use documented in `data-specification.md` and data kept outside Git; if not, the synthetic-only path confirmed | 2026-10-31 | Planned | `PHA2-26-real-data-access` |
 | PHA2-27 | First ML model vs baselines | Evelina | LightGBM model with lag and calendar features compared against all baselines on the hold-out period of the synthetic dataset using the experiment runner | Configuration and results saved under `forecasting/experiments/`; MAE and WAPE table per medicine group; stock-out periods excluded from training (FR-17); results reproducible from a clean checkout | 2026-11-27 | Planned | `PHA2-27-first-ml-model` |
